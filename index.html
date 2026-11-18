@@ -528,7 +528,7 @@ pre.log{background:var(--soft);border-radius:10px;padding:12px;font-family:ui-mo
 `;document.head.appendChild(css);
 
 /* ---------- permissões ---------- */
-const PERMS=[["approve","Aprovar e devolver pedidos"],["fix","Corrigir pedidos com inconsistência"],["export","Exportar notas (CSV)"],["clients","Gerenciar clientes e procurações"],["license","Solicitar renovação e usuários de licença"],["audit","Ver a auditoria"],["users","Gerenciar usuários e acessos"],["backups","Ver logs e gerenciar backups"],["email","Gerenciar contas de e-mail"],["claude","Gerenciar o Claude (API)"],["settings","Alterar configurações do sistema"],["perms","Editar permissões dos perfis"]];
+const PERMS=[["approve","Aprovar e devolver pedidos"],["fix","Corrigir pedidos com inconsistência"],["export","Exportar notas (CSV)"],["clients","Gerenciar clientes e procurações"],["license","Solicitar renovação e usuários de licença"],["audit","Ver a auditoria"],["users","Gerenciar usuários e acessos"],["backups","Ver logs e gerenciar backups"],["email","Gerenciar contas de e-mail"],["claude","Gerenciar o Claude (API)"],["settings","Alterar configurações do sistema"],["perms","Editar permissões dos perfis"],["cancel","Solicitar e aprovar cancelamento de notas"],["reports","Ver relatórios e exportá-los"]];
 const ROLE_LIST=["Administrador","Gerente","Aprovador","Visualizador"];
 const perm=k=>ROLE==="Administrador"||!!(S.perms&&S.perms[k]&&S.perms[k][ROLE]);
 can.approve=()=>perm("approve");can.manage=()=>perm("clients");can.admin=()=>ROLE==="Administrador";
@@ -539,7 +539,7 @@ NAV.length=0;NAV.push(["overview","Visão geral"],["orders","Pedidos recebidos"]
 Object.assign(TITLES,{email:["Contas de e-mail","Caixas que recebem os pedidos e enviam as notas e os alertas."],claude:["Claude (API)","Chave, consumo, limites e armazenamento dos dados enviados ao Claude."],account:["Segurança da conta","Senha, autenticação em duas etapas (MFA) e sessões."],backups:["Backups e logs","Agendamento, retenção e registros dos backups local e em nuvem."],settings:["Configurações","Regras do sistema, segurança, emissor, OneDrive e permissões."]});
 window.renderNav=function(){const c=counts();let h="";NAV.forEach(([id,l,b])=>{if(id==="_"){h+=`<div class="sidegroup">${l}</div>`;return}
   if(VIEW_PERM[id]&&!perm(VIEW_PERM[id]))return;
-  const bd=b==="aw"&&c.aw?`<span class="pill">${c.aw}</span>`:b==="er"&&c.er?`<span class="pill red">${c.er}</span>`:b==="soon"?`<span class="pill soon">fase 2</span>`:"";
+  const bd=b==="aw"&&c.aw?`<span class="pill">${c.aw}</span>`:b==="er"&&c.er?`<span class="pill red">${c.er}</span>`:b==="soon"?`<span class="pill soon">fase 2</span>`:b==="opt"?`<span class="pill soon">opcional</span>`:"";
   h+=`<button data-nav="${id}" class="${VIEW===id?"active":""}" ${VIEW===id?'aria-current="page"':""}><span>${l}</span>${bd}</button>`});$("#nav").innerHTML=h};
 window.paint=function(){const [t,s]=TITLES[VIEW];$("#title").textContent=t;$("#subtitle").innerHTML=esc(s)+(VIEW==="overview"?` Atualizado ${ago((new Date()-NOW)/60000+1)}.`:"");
   const need=VIEW_PERM[VIEW],denied=need&&!perm(need);
@@ -576,7 +576,7 @@ function mkCloud(d,ok,err,manual){const files=ok?36+((d.getDate()*3)%20):0,h=man
   else L.push(`${t(8)} ERRO: ${err}`,`${t(9)} Tentativa 3 de 3 falhou`,`${t(10)} Alerta enviado para ${S.bk.recipients}`);
   return {id:LOGID++,d,type:manual?"Manual":"Agendado",files,size:ok?(files*0.045).toFixed(1).replace(".",",")+" GB":"-",dur:ok?"1 min 17 s":"-",ok,err,lines:L}}
 function extendSeed(){
-  S.perms={};PERMS.forEach(([k])=>{S.perms[k]={Administrador:true,Gerente:["approve","fix","export","clients","license","audit"].includes(k),Aprovador:["approve","fix","export"].includes(k),Visualizador:false}});
+  S.perms={};PERMS.forEach(([k])=>{S.perms[k]={Administrador:true,Gerente:["approve","fix","export","clients","license","audit","cancel","reports"].includes(k),Aprovador:["approve","fix","export","reports"].includes(k),Visualizador:false}});
   S.sec={pwMin:8,pwLevel:2,expDays:90,mfaReq:true,idleMin:20,maxFails:5,lockMin:15,lanOnly:false,forceChange:true};
   S.emails=[{id:1,addr:"contabilidade@cruz.example",role:"Entrada de pedidos",prov:"Microsoft 365 (OAuth)",auth:"OAuth",folder:"Caixa de Entrada/Pedidos NFS-e",on:true,status:"ok",last:new Date(NOW-2*60000),today:18,senders:"Somente e-mails dos clientes cadastrados",sig:"",auto:"Recebemos seu pedido de nota fiscal e ele está em análise."},
     {id:2,addr:"nfse@cruz.example",role:"Envio das notas aos clientes",prov:"Microsoft 365 (OAuth)",auth:"OAuth",folder:"",on:true,status:"ok",last:new Date(NOW-9*60000),today:10,senders:"",sig:"Cruz Sociedade de Contadores · Departamento Fiscal",auto:""},
@@ -773,7 +773,185 @@ VIEWS.license=()=>{const L=S.lic,left=Math.round((L.expiry-NOW)/864e5),act=S.use
   <div class="card"><h2>Pedidos e histórico</h2>${S.requests.length?`<div class="tablewrap"><table><thead><tr><th>Pedido</th><th>Descrição</th><th class="num">Valor</th><th>Situação</th></tr></thead><tbody>${S.requests.map(r=>`<tr><td>${fDT(r.t)}</td><td>${esc(r.desc)}</td><td class="num">${brl(r.value)}</td><td><span class="badge ${r.status==="Licença emitida"?"b-ok":"b-warn"}">${r.status}</span></td></tr>`).join("")}</tbody></table></div>`:'<p class="note">Nenhum pedido em aberto. Ao solicitar, o desenvolvedor confirma o pagamento e publica a nova licença assinada; o sistema atualiza sozinho.</p>'}
   ${S.requests.some(r=>r.status!=="Licença emitida")?`<div class="callout mt"><b>Lado do desenvolvedor (simulação)</b><p class="note">Na vida real, quem confirma o pagamento e assina a licença é o desenvolvedor, fora deste painel.</p><button class="btn sm" data-act="devConfirm">Confirmar pagamento e publicar licença</button></div>`:""}
   <h3 class="mt">Histórico</h3><table><tbody>${S.licHist.map(h=>`<tr><td>${fDate(h[0])}</td><td>${esc(h[1])}<div class="note">${esc(h[2])}</div></td></tr>`).join("")}</tbody></table></div></div>`};
-window.addEventListener('DOMContentLoaded',()=>{});
+
+/* ===== Parte 3: gráficos, visibilidade por perfil, fases do projeto, serviços opcionais, cancelamentos, relatórios, ajuda ===== */
+const css3=document.createElement("style");css3.textContent=`
+.modal{max-height:90vh;overflow:auto}.chhead{margin-bottom:6px;gap:10px;flex-wrap:wrap}.chhead h2{margin:0}
+.chtool{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:99px;overflow:hidden}
+.seg button{border:0;background:var(--card);padding:5px 12px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted)}
+.seg button.on{background:var(--primary);color:var(--primary-text)}
+.chip{border:1px solid var(--border);background:var(--card);padding:5px 12px;border-radius:99px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted)}
+.chip.on{border-color:var(--primary);color:var(--primary)}
+svg.ch{width:100%;height:auto;display:block;overflow:visible}
+svg.ch text{fill:var(--muted);font-size:11px;font-family:inherit}
+svg.ch .vl{fill:var(--text);font-weight:700}
+svg.ch .grid{stroke:var(--border);stroke-width:1}
+svg.ch .ln{fill:none;stroke:var(--bar);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+svg.ch .ar{fill:var(--bar);opacity:.18}
+svg.ch .bar{fill:var(--bar)}svg.ch .bar.we{fill:var(--weekend)}svg.ch .bar.td,svg.ch .dot.td{fill:var(--gold)}
+svg.ch .dot{fill:var(--bar);stroke:var(--card);stroke-width:2}svg.ch .dot.we{fill:var(--weekend)}
+svg.ch rect.bar:hover,svg.ch circle.dot:hover{filter:brightness(1.25)}
+.ph{display:inline-block;border-radius:6px;padding:1px 8px;font-size:12px;font-weight:700;white-space:nowrap}
+.ph1{background:var(--ok-bg);color:var(--ok-text)}.ph2{background:var(--info-bg);color:var(--info-text)}.pho{background:var(--warn-bg);color:var(--warn-text)}
+.card.opt{display:flex;flex-direction:column;gap:8px}.card.opt .grow{flex:1}
+.callout.ph2b{background:var(--info-bg);color:var(--info-text);border-color:var(--info-dot)}
+.callout.phob{background:var(--warn-bg);color:var(--warn-text);border-color:var(--warn-dot)}
+ul.tight{margin:6px 0 0 18px;padding:0}ul.tight li{margin:3px 0}
+details.faq{border-bottom:1px solid var(--border);padding:8px 0}details.faq summary{cursor:pointer;font-weight:600}
+`;document.head.appendChild(css3);
+
+/* ---------- gráficos ---------- */
+const CH={};
+const brlS=v=>"R$ "+Math.round(v).toLocaleString("pt-BR");
+function chartSvg(id){const {labels,vals,o}=CH[id],p=S.chartPref[id],fmt=o.fmt||(v=>String(v)),W=720,H=o.h||220,L=o.axisW||38,R=12,T=26,B=26,n=vals.length,raw=Math.max(...vals,.0001)/4,mag=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/mag,stp=(f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*mag,mx=stp*4,pw=W-L-R,ph=H-T-B,y=v=>T+ph*(1-v/mx),sw=pw/n,bx=i=>L+i*sw,px=i=>L+(n===1?pw/2:(i+.5)*sw);
+  const step=Math.ceil(n/(o.maxLabels||8)),fs=n>20?9:11;
+  let g="";[0,.25,.5,.75,1].forEach(f=>{const v=mx*f,yy=y(v),ax=o.axis||(stp<1?(q=>q.toFixed(1).replace('.',',')):(q=>o.fmt&&!o.fmtIsPlain?o.fmt(Math.round(q)):String(Math.round(q))));g+=`<line class="grid" x1="${L}" x2="${W-R}" y1="${yy}" y2="${yy}"/><text x="${L-6}" y="${yy+4}" text-anchor="end">${ax(v)}</text>`});
+  let s="";
+  if(p.type==="bar"){vals.forEach((v,i)=>{const cls=(o.today&&i===n-1)?"td":(o.wk&&o.wk[i]?"we":""),h=ph*v/mx,bw=Math.min(sw*.68,46);s+=`<rect class="bar ${cls}" x="${bx(i)+(sw-bw)/2}" y="${T+ph-h}" width="${bw}" height="${Math.max(h,2)}" rx="4"><title>${labels[i]}: ${fmt(v)}</title></rect>`;if(p.vals)s+=`<text class="vl" x="${px(i)}" y="${T+ph-h-5}" text-anchor="middle" style="font-size:${fs}px">${fmt(v)}</text>`})}
+  else{const pts=vals.map((v,i)=>[px(i),y(v)]),line=pts.map((q,i)=>(i?"L":"M")+q[0].toFixed(1)+" "+q[1].toFixed(1)).join(" ");
+    s+=`<path class="ar" d="${line} L${pts[n-1][0].toFixed(1)} ${T+ph} L${pts[0][0].toFixed(1)} ${T+ph} Z"/><path class="ln" d="${line}"/>`;
+    vals.forEach((v,i)=>{const cls=(o.today&&i===n-1)?"td":(o.wk&&o.wk[i]?"we":"");s+=`<circle class="dot ${cls}" cx="${pts[i][0]}" cy="${pts[i][1]}" r="${n>20?3:4.5}"><title>${labels[i]}: ${fmt(v)}</title></circle>`;if(p.vals)s+=`<text class="vl" x="${pts[i][0]}" y="${pts[i][1]-9}" text-anchor="middle" style="font-size:${fs}px">${fmt(v)}</text>`})}
+  let xl="";labels.forEach((l,i)=>{if(i%step===0||i===n-1)xl+=`<text x="${px(i)}" y="${H-8}" text-anchor="middle">${l}</text>`});
+  return `<svg class="ch" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.aria||"Gráfico")}">${g}${s}${xl}</svg>`}
+function chartBox(id,title,labels,vals,o={}){CH[id]={labels,vals,o};S.chartPref=S.chartPref||{};const p=S.chartPref[id]=S.chartPref[id]||{type:"area",vals:true};
+  return `<div class="chw" id="chw_${id}"><div class="spread chhead"><h2>${title}</h2><div class="chtool"><div class="seg" role="group" aria-label="Tipo de gráfico"><button type="button" class="${p.type==="bar"?"on":""}" aria-pressed="${p.type==="bar"}" data-do="chType" data-id="${id}" data-v="bar">Barras</button><button type="button" class="${p.type==="area"?"on":""}" aria-pressed="${p.type==="area"}" data-do="chType" data-id="${id}" data-v="area">Linha/área</button></div><button type="button" class="chip ${p.vals?"on":""}" aria-pressed="${p.vals}" data-do="chVals" data-id="${id}">${p.vals?"Ocultar valores":"Mostrar valores"}</button></div></div><div class="chsvg">${chartSvg(id)}</div>${o.foot?`<div class="note">${o.foot}</div>`:""}</div>`}
+const chRedraw=id=>{const e=$("#chw_"+id);if(e){const d=document.createElement("div");d.innerHTML=chartBox(id,$("h2",e).textContent,CH[id].labels,CH[id].vals,CH[id].o);e.replaceWith(d.firstElementChild)}};
+DO.chType=t=>{S.chartPref[t.dataset.id].type=t.dataset.v;chRedraw(t.dataset.id)};
+DO.chVals=t=>{const p=S.chartPref[t.dataset.id];p.vals=!p.vals;chRedraw(t.dataset.id)};
+
+const _ov2=VIEWS.overview;
+VIEWS.overview=()=>{let h=_ov2();const days=[...Array(14)].map((_,i)=>addDays(NOW,i-13)),cnt=days.map(d=>S.notes.filter(n=>isoDay(n.date)===isoDay(d)).length);
+  const box=`<div class="card">${chartBox("ov","Notas emitidas por dia (últimos 14 dias)",days.map(d=>fDate(d).slice(0,5)),cnt,{wk:days.map(d=>[0,6].includes(d.getDay())),today:true,aria:"Notas emitidas por dia",foot:"Fins de semana em cinza claro · hoje em dourado",axisW:26})}</div>`;
+  return h.replace(/<div class="card"><h2>Notas emitidas por dia[\s\S]*?<\/span><\/div><\/div>/,box)};
+const _cl2=VIEWS.claude;
+VIEWS.claude=()=>{let h=_cl2();const d=S.apiDaily,box=`<div class="card mt">${chartBox("cl","Consumo por dia (últimos 30 dias, US$)",d.map(x=>fDate(x.date).slice(0,5)),d.map(x=>x.usd),{wk:d.map(x=>[0,6].includes(x.date.getDay())),today:true,fmt:v=>v.toFixed(2).replace(".",","),axisW:34,maxLabels:10,aria:"Consumo diário do Claude em dólares",foot:"Valores em US$ · fins de semana em cinza claro · hoje em dourado"})}</div>`;
+  return h.replace(/<div class="card mt"><h2>Consumo por dia[\s\S]*?<\/span><\/div><\/div>/,box)};
+
+/* ---------- serviços opcionais (sob consulta) ---------- */
+const OPT=[
+ {id:"img",ico:"🖼️",name:"Pedidos por imagem (JPG, JPEG, PNG)",sum:"Ler fotos, prints de conversa e documentos digitalizados que chegam anexados.",
+  what:["O Claude lê o texto que aparece na imagem e extrai os mesmos dados de um pedido normal (cliente, tomador, CPF/CNPJ, descrição, valor).","Aceita JPG, JPEG e PNG. PDF escaneado (sem texto) pode entrar no mesmo serviço.","Pode ser combinado com a entrada por WhatsApp."],
+  needs:["Imagem nítida e legível, sem cortes","Tamanho máximo por arquivo definido no orçamento (exemplo: 5 MB)","Chave do Claude da Cruz com saldo (o consumo é maior que o de um e-mail em texto)"],
+  cost:"Cada imagem consome mais da API do Claude que um e-mail em texto. O aumento é medido na tela Claude (API) e entra nos limites diário e mensal.",
+  risk:"A leitura de imagem erra mais que a de texto, principalmente com letra manuscrita, foto torta ou pouca luz. Por isso todo pedido que veio por imagem fica sempre em aprovação manual, mesmo para clientes em modo automático, e o CPF/CNPJ é conferido pelos dígitos verificadores.",
+  time:"Definido no orçamento, depois de testar com exemplos reais de pedidos da Cruz.",
+  rec:"Recomendado: sim, é um bom serviço opcional. Muitos clientes mandam foto ou print. Começar só com aprovação manual."},
+ {id:"cloud",ico:"☁️",name:"Backup em nuvem criptografada",sum:"Segunda cópia das notas, PDFs e XMLs fora do escritório.",
+  what:["Cópia diária automática, criptografada (AES-256) no computador antes do envio.","Relatório de cada sincronização por e-mail e log completo no painel (aba Logs da nuvem).","Teste de restauração periódico."],
+  needs:["Volume contratado (exemplo: 100 GB), ampliável","Internet estável no computador do sistema"],
+  cost:"Mensalidade por volume de espaço. Valor definido no orçamento.",risk:"Sem internet a sincronização falha e o painel alerta. O backup em HD USB continua funcionando.",
+  time:"Definido no orçamento.",rec:"Recomendado: sim. Protege contra roubo, incêndio e falha do HD."},
+ {id:"wpp",ico:"💬",name:"Entrada de pedidos por WhatsApp",sum:"Receber pedidos de nota pelo WhatsApp da Cruz, além do e-mail.",
+  what:["Os pedidos recebidos no WhatsApp Business entram na mesma fila e seguem a mesma aprovação.","Resposta automática de recebimento ao cliente.","Pode ler texto, áudio transcrito e imagens (junto com o serviço de imagens)."],
+  needs:["Número de WhatsApp Business da Cruz","Conta na API oficial do WhatsApp (tem custo de mensagens)","Consentimento dos clientes para esse canal (LGPD)"],
+  cost:"Custo da API do WhatsApp (por conversa) mais o desenvolvimento. Definido no orçamento.",risk:"Depende das regras e preços da plataforma do WhatsApp, que mudam.",time:"Definido no orçamento.",rec:"Vale se muitos clientes já pedem por WhatsApp."},
+ {id:"rec",ico:"🔁",name:"Emissão recorrente e agendada",sum:"Notas de mensalidade emitidas automaticamente em datas fixas.",
+  what:["Cadastro de contratos com valor, tomador e dia de emissão.","A nota entra na fila no dia certo e segue a regra de aprovação do cliente.","Lista de recorrências com pausa e histórico."],needs:["Contratos e valores confirmados pelos clientes da Cruz"],
+  cost:"Desenvolvimento único. Sem custo extra de API quando os dados já estão cadastrados.",risk:"Valor errado se repete todo mês. Por isso a primeira emissão de cada contrato exige aprovação.",time:"Definido no orçamento.",rec:"Muito útil para clientes com serviços mensais fixos."},
+ {id:"erp",ico:"📤",name:"Integração com sistema contábil (exportação)",sum:"Enviar as notas emitidas para o sistema contábil da Cruz.",
+  what:["Arquivo de importação no formato exigido pelo sistema contábil usado, gerado após cada emissão ou por período.","Pasta de saída monitorada ou envio por e-mail."],needs:["Nome e versão do sistema contábil","Layout de importação do sistema (fornecido pelo fabricante)"],
+  cost:"Depende do sistema contábil. Definido após a análise do layout.",risk:"Se o sistema não aceita importação de arquivo, a integração pode não ser possível.",time:"Definido no orçamento, depois de confirmar o layout.",rec:"Recomendado se hoje alguém digita as notas no sistema contábil."},
+ {id:"bill",ico:"💳",name:"Cobrança junto com a nota (boleto ou Pix)",sum:"Gerar a cobrança e mandar com a nota ao cliente.",
+  what:["Geração de boleto ou Pix por meio do banco ou da plataforma de cobrança da Cruz.","Envio da nota e da cobrança no mesmo e-mail e acompanhamento do pagamento."],needs:["Conta e credenciais da API do banco/plataforma da Cruz"],
+  cost:"Desenvolvimento mais tarifas do banco. Definido no orçamento.",risk:"Cada banco tem regras e homologação próprias.",time:"Definido no orçamento.",rec:"Só se a Cruz quiser cobrar pelo sistema."},
+ {id:"cert",ico:"🔐",name:"Renovação assistida do certificado digital",sum:"Apoio na troca do certificado A1 antes do vencimento.",
+  what:["Aviso antecipado e checklist da renovação.","Instalação do novo certificado e teste de assinatura no Emissor Nacional.","Conferência da procuração após a troca."],needs:["Novo certificado emitido pela autoridade certificadora escolhida pela Cruz"],
+  cost:"Por atendimento. O certificado em si é comprado pela Cruz.",risk:"Certificado vencido para a emissão de notas até a troca.",time:"Agendado conforme o vencimento.",rec:"Útil: o certificado vence todo ano."},
+ {id:"sup",ico:"🛟",name:"Suporte estendido e monitoramento",sum:"Atendimento com prazo combinado e acompanhamento do serviço.",
+  what:["Prazos de resposta combinados em contrato.","Verificação periódica da saúde do serviço, dos backups e dos limites.","Atualizações do sistema e ajustes de regras."],needs:["Contrato de suporte"],
+  cost:"Mensalidade. Definida no orçamento conforme o nível de atendimento.",risk:"O suporte padrão cobre os 30 dias após a entrega. Depois disso, atendimentos são pagos à parte.",time:"Imediato após a contratação.",rec:"Recomendado depois dos primeiros 30 dias."},
+ {id:"multi",ico:"🏢",name:"Mais usuários ou mais empresas",sum:"Acima de 15 usuários, ou emitir para outra empresa do grupo.",
+  what:["Ampliação do limite da licença além de 15 usuários.","Segunda instalação, ou várias empresas no mesmo painel, com certificado e procuração de cada uma."],needs:["Certificado digital e procuração de cada empresa"],
+  cost:"Definido no orçamento.",risk:"Cada empresa tem certificado, pastas e regras próprias.",time:"Definido no orçamento.",rec:"Só se a Cruz precisar."},
+ {id:"train",ico:"🎓",name:"Treinamento adicional",sum:"Sessões extras além das 6 horas incluídas.",
+  what:["Sessões ao vivo para novos usuários ou novos recursos.","Material em vídeo e passo a passo."],needs:["Agendamento com a equipe"],cost:"Por hora ou por pacote. Definido no orçamento.",risk:"",time:"Conforme agenda.",rec:"Útil quando entrar gente nova na equipe."},
+];
+const optById=id=>OPT.find(o=>o.id===id);
+const optLink=(id,txt)=>`<button type="button" class="linkbtn" style="color:var(--primary)" data-do="optInfo" data-id="${id}">${txt||"Ver detalhes"}</button>`;
+function quoteModal(o){modal(`Solicitar orçamento: ${o.name}`,`<div class="field"><label for="qn">Seu nome</label><input type="text" id="qn" value="${esc(me().name)}"></div><div class="field"><label for="qe">E-mail para retorno</label><input type="email" id="qe" value="${esc(me().email)}"></div><div class="field"><label for="qm">O que você precisa? (opcional)</label><textarea id="qm" rows="3" placeholder="Ex.: hoje recebemos cerca de 10 pedidos por foto por semana."></textarea></div><p class="note">O pedido vai para o desenvolvedor, que responde com valor e prazo. Nada é cobrado nem contratado por este formulário. (Demonstração: nada é enviado de verdade.)</p>`,
+  [{label:"Cancelar"},{label:"Enviar pedido",cls:"primary",fn:()=>{if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(val("qe"))){toast("Informe um e-mail válido.","err");return false}S.quotes.unshift({t:new Date(),opt:o.id,by:val("qn"),st:"Enviado"});audit(`Pediu orçamento: ${o.name}`);toast("Pedido de orçamento enviado ao desenvolvedor (simulado).","ok");paint()}}])}
+DO.optInfo=t=>{const o=optById(t.dataset.id);if(!o)return;
+  modal(o.name,`<p><span class="ph pho">Opcional</span> <span class="badge b-mute">Sob consulta</span> <span class="badge b-mute">Não contratado</span></p><p>${o.sum}</p><h3>O que inclui</h3><ul class="tight">${o.what.map(x=>`<li>${x}</li>`).join("")}</ul><h3 class="mt">O que é preciso</h3><ul class="tight">${o.needs.map(x=>`<li>${x}</li>`).join("")}</ul><h3 class="mt">Custos</h3><p>${o.cost}</p>${o.risk?`<h3 class="mt">Limites e cuidados</h3><p>${o.risk}</p>`:""}<h3 class="mt">Prazo</h3><p>${o.time}</p><div class="callout mt"><b>Nossa avaliação:</b> ${o.rec}</div><p class="note">Este é um serviço opcional e não faz parte do valor do projeto. O orçamento é feito sob consulta.</p>`,
+  [{label:"Fechar"},...(perm("license")?[{label:"Solicitar orçamento",cls:"primary",fn:()=>{setTimeout(()=>quoteModal(o),0)}}]:[])])};
+VIEWS.optional=()=>`<div class="callout phob"><b>Serviços opcionais, sob consulta.</b> Não fazem parte do valor do projeto. Cada um tem orçamento próprio, feito depois de entender a necessidade da Cruz. Abra um serviço para ver o que inclui, o que é preciso, os custos e os cuidados.</div><div class="grid g3 mt">${OPT.map(o=>`<div class="card opt"><div class="spread"><span style="font-size:26px" aria-hidden="true">${o.ico}</span><span class="ph pho">Opcional</span></div><b>${o.name}</b><span class="note grow">${o.sum}</span><div class="spread"><span class="badge b-mute">Sob consulta</span><button class="btn sm" data-do="optInfo" data-id="${o.id}">Ver detalhes</button></div></div>`).join("")}</div>
+ <div class="card mt"><h2>Pedidos de orçamento</h2>${S.quotes.length?`<div class="tablewrap"><table><thead><tr><th>Data</th><th>Serviço</th><th>Solicitante</th><th>Situação</th></tr></thead><tbody>${S.quotes.map(q=>`<tr><td>${fDT(q.t)}</td><td>${esc(optById(q.opt).name)}</td><td>${esc(q.by)}</td><td><span class="badge b-info">${q.st}</span></td></tr>`).join("")}</tbody></table></div>`:'<p class="note">Nenhum pedido ainda. Abra um serviço e clique em “Solicitar orçamento”.</p>'}</div>`;
+DO.devQuote=()=>{S.quotes.forEach(q=>{if(q.st==="Enviado")q.st="Respondido"});paint()};
+
+/* ---------- fases do projeto ---------- */
+const FEAT=[
+ ["Entrada","Leitura dos e-mails de pedidos (texto e PDF com texto)",1],["Entrada","Interpretação dos dados pelo Claude, com a chave da própria Cruz",1],["Entrada","Fila de pedidos, busca e filtros",1],
+ ["Aprovação","Aprovação manual: aprovar, corrigir, devolver ao cliente",1],["Aprovação","Tratamento de erros e inconsistências",1],
+ ["Emissão","Emissão no Emissor Nacional com certificado A1 e procuração",1],["Emissão","PDF e XML salvos na pasta do cliente no OneDrive",1],["Emissão","Envio da nota ao cliente por e-mail",1],
+ ["Painel","Visão geral, notas emitidas, clientes e procurações, saúde do serviço",1],["Painel","Gráficos com valores, em barras ou linha/área",1],
+ ["Acesso","Login com senha forte e MFA; usuários e permissões por perfil; auditoria",1],
+ ["Operação","Backup no HD local, com relatório e logs por e-mail e no painel",1],["Operação","Licenciamento: usuários, vencimento, renovação",1],["Operação","Contas de e-mail, consumo e limites do Claude, configurações",1],["Operação","Treinamento (até 6 horas) e suporte de 30 dias",1],
+ ["Aprovação","Aprovação automática por cliente, depois do período de acompanhamento",2],["Aprovação","Regra por valor: acima de um limite, o gerente aprova",2],
+ ["Emissão","Cancelamento de NFS-e com aprovação do gerente",2],["Gestão","Relatórios mensais por cliente, exportação e envio por e-mail",2],["Gestão","Resumo diário por e-mail para o gerente",2],["Operação","Alertas avançados e novas tentativas automáticas em falhas do Emissor",2],
+ ...OPT.map(o=>["Opcional",o.name,"o",o.id])];
+const phBadge=p=>p===1?'<span class="ph ph1">Fase 1</span>':p===2?'<span class="ph ph2">Fase 2</span>':'<span class="ph pho">Opcional</span>';
+const phState=p=>p===1?"Funcional nesta demonstração":p===2?"Prévia visual (ainda não ativa)":"Informativo, sob consulta";
+VIEWS.phases=()=>{const f=S.phTab,c1=FEAT.filter(x=>x[2]===1).length,c2=FEAT.filter(x=>x[2]===2).length,co=FEAT.filter(x=>x[2]==="o").length,L=FEAT.filter(x=>f==="all"||String(x[2])===f);
+  return `<div class="grid g3"><div class="card"><span class="ph ph1">Fase 1</span><h2 style="margin:8px 0">Emissão assistida</h2><p class="note">Entrega inicial. O sistema lê os pedidos, interpreta e prepara a nota, e uma pessoa aprova antes de emitir.</p><b>${c1} recursos</b></div><div class="card"><span class="ph ph2">Fase 2</span><h2 style="margin:8px 0">Automação e gestão</h2><p class="note">Depois de um período de acompanhamento, o sistema passa a emitir sozinho para os clientes aprovados, e ganha cancelamento e relatórios.</p><b>${c2} recursos</b></div><div class="card"><span class="ph pho">Opcional</span><h2 style="margin:8px 0">Serviços sob consulta</h2><p class="note">Extras com orçamento próprio, como imagens JPG/PNG, nuvem e WhatsApp.</p><b>${co} serviços</b> · ${optLink("img","ver imagens")}</div></div>
+  <div class="card mt"><div class="spread" style="margin-bottom:10px"><h2 style="margin:0">Todos os recursos do projeto</h2></div>${tabs(f,[["all","Todos"],["1","Fase 1"],["2","Fase 2"],["o","Opcionais"]],"tabPh")}<div class="tablewrap"><table><thead><tr><th>Área</th><th>Recurso</th><th>Fase</th><th>Nesta demonstração</th></tr></thead><tbody>${L.map(x=>`<tr><td>${x[0]}</td><td>${x[3]?optLink(x[3],esc(x[1])):esc(x[1])}</td><td>${phBadge(x[2])}</td><td class="note">${phState(x[2])}</td></tr>`).join("")}</tbody></table></div><p class="note mt">A divisão em fases é a proposta para o projeto e será confirmada no contrato. Valores e prazos estão no orçamento.</p></div>`};
+DO.tabPh=t=>{S.phTab=t.dataset.t;paint()};
+
+/* ---------- cancelamentos (Fase 2) ---------- */
+VIEWS.cancel=()=>{const can_=perm("cancel"),done=new Set(S.cancels.filter(c=>c.st!=="Recusado").map(c=>c.n)),el=[...S.notes].sort((a,b)=>b.date-a.date).slice(0,10);
+  return `<div class="callout">O cancelamento depende das regras e dos prazos do município e do Emissor Nacional. Nesta prévia, o pedido passa pela aprovação do gerente e depois é “enviado” ao Emissor (simulado).</div>
+  <div class="grid g2 mt"><div class="card"><h2>Notas que podem ser canceladas</h2><div class="tablewrap"><table><thead><tr><th>Nº</th><th>Cliente</th><th class="num">Valor</th><th></th></tr></thead><tbody>${el.map(n=>`<tr><td>${n.n}<div class="note">${fDT(n.date)}</div></td><td>${esc(n.client)}<div class="note">${esc(n.taker)}</div></td><td class="num">${brl(n.value)}</td><td>${done.has(n.n)?'<span class="badge b-mute">Em andamento</span>':`<button class="btn sm danger" data-do="cnReq" data-n="${n.n}">Solicitar cancelamento</button>`}</td></tr>`).join("")}</tbody></table></div></div>
+  <div class="card"><h2>Pedidos de cancelamento</h2>${S.cancels.length?S.cancels.map((c,i)=>`<div class="svc"><div><b>NFS-e ${c.n}</b> · ${esc(c.client)}<small>${esc(c.reason)} · por ${esc(c.by)} em ${fDT(c.t)}</small><small>${esc(c.why)}</small></div><div style="text-align:right"><span class="badge ${c.st==="Cancelada"?"b-ok":c.st==="Recusado"?"b-err":"b-warn"}">${c.st}</span>${c.st==="Aguardando aprovação"&&perm("cancel")&&ROLE!=="Visualizador"&&ROLE!=="Aprovador"?`<div class="row mt" style="justify-content:flex-end"><button class="btn sm" data-do="cnNo" data-i="${i}">Recusar</button><button class="btn sm primary" data-do="cnYes" data-i="${i}">Aprovar</button></div>`:""}</div></div>`).join(""):'<p class="note">Nenhum pedido de cancelamento.</p>'}${can_?"":'<p class="note mt">Seu perfil só consulta esta tela.</p>'}</div></div>`};
+DO.cnReq=t=>{const n=S.notes.find(x=>x.n==t.dataset.n);modal(`Cancelar a NFS-e ${n.n}`,`<p class="note">${esc(n.client)} · tomador ${esc(n.taker)} · ${brl(n.value)}</p><div class="field"><label for="cr">Motivo</label><select id="cr">${["Erro nos dados do tomador","Valor incorreto","Duplicidade","Serviço não prestado"].map(x=>`<option>${x}</option>`).join("")}</select></div><div class="field"><label for="cw">Justificativa (mínimo 15 caracteres)</label><textarea id="cw" rows="3"></textarea></div><p class="note">O gerente precisa aprovar antes de o pedido seguir ao Emissor Nacional.</p>`,
+  [{label:"Voltar"},{label:"Enviar para aprovação",cls:"danger",fn:()=>{if(val("cw").trim().length<15){toast("Explique o motivo com pelo menos 15 caracteres.","err");return false}S.cancels.unshift({n:n.n,client:n.client,reason:val("cr"),why:val("cw").trim(),by:me().name,t:new Date(),st:"Aguardando aprovação"});audit(`Pediu o cancelamento da NFS-e ${n.n}`);toast("Pedido enviado para aprovação do gerente.","ok");paint()}}])};
+DO.cnYes=t=>{const c=S.cancels[t.dataset.i];c.st="Cancelada";audit(`Aprovou o cancelamento da NFS-e ${c.n}`);toast(`NFS-e ${c.n} cancelada no Emissor (simulado).`,"ok");notify&&notify(`NFS-e ${c.n} cancelada`,"Cancelamento aprovado (simulado).");paint()};
+DO.cnNo=t=>{const c=S.cancels[t.dataset.i];c.st="Recusado";audit(`Recusou o cancelamento da NFS-e ${c.n}`);toast("Pedido recusado.","warn");paint()};
+
+/* ---------- relatórios (Fase 2) ---------- */
+function repData(){const from=new Date(NOW.getFullYear(),NOW.getMonth(),1),L=S.notes.filter(n=>n.date>=from&&!S.cancels.some(c=>c.n===n.n&&c.st==="Cancelada")),by={};L.forEach(n=>{(by[n.client]=by[n.client]||{c:0,v:0});by[n.client].c++;by[n.client].v+=n.value});return {L,by,tot:L.reduce((s,n)=>s+n.value,0)}}
+VIEWS.reports=()=>{const {L,by,tot}=repData(),cl=Object.entries(by).sort((a,b)=>b[1].v-a[1].v),days=[...Array(NOW.getDate())].map((_,i)=>new Date(NOW.getFullYear(),NOW.getMonth(),i+1)),dv=days.map(d=>L.filter(n=>isoDay(n.date)===isoDay(d)).reduce((s,n)=>s+n.value,0));
+  return `<div class="grid g4"><div class="card kpi"><div class="lbl">Notas no mês</div><div class="num">${L.length}</div></div><div class="card kpi"><div class="lbl">Valor total</div><div class="num" style="font-size:26px">${brl(tot)}</div></div><div class="card kpi"><div class="lbl">Valor médio por nota</div><div class="num" style="font-size:26px">${brl(L.length?tot/L.length:0)}</div></div><div class="card kpi"><div class="lbl">Clientes atendidos</div><div class="num">${cl.length}</div></div></div>
+  <div class="card mt">${chartBox("rp1","Valor emitido por dia (mês atual, R$)",days.map(d=>String(d.getDate())),dv,{fmt:brlS,axisW:56,maxLabels:12,today:false,aria:"Valor emitido por dia",foot:"Dias sem notas aparecem com valor zero"})}</div>
+  <div class="card mt"><div class="spread" style="margin-bottom:10px"><h2 style="margin:0">Por cliente</h2><div class="row">${perm("reports")?`<button class="btn" data-do="rpCsv">Exportar CSV</button><button class="btn" data-do="rpMail">Enviar por e-mail</button>`:""}</div></div><div class="tablewrap"><table><thead><tr><th>Cliente</th><th class="num">Notas</th><th class="num">Valor</th><th class="num">%</th></tr></thead><tbody>${cl.map(([k,v])=>`<tr><td>${esc(k)}</td><td class="num">${v.c}</td><td class="num">${brl(v.v)}</td><td class="num">${tot?Math.round(v.v/tot*100):0}%</td></tr>`).join("")}</tbody></table></div></div>`};
+DO.rpCsv=()=>{const {by}=repData();download("relatorio-mensal-demo.csv","﻿Cliente;Notas;Valor\n"+Object.entries(by).map(([k,v])=>`${k};${v.c};${v.v.toFixed(2).replace(".",",")}`).join("\n"),"text/csv");audit("Exportou o relatório mensal")};
+DO.rpMail=()=>{toast(`Relatório enviado para ${S.cfg.notifyTo} (simulado).`,"ok");audit("Enviou o relatório mensal por e-mail")};
+
+/* ---------- ajuda ---------- */
+VIEWS.help=()=>`<div class="grid g2"><div class="card"><h2>Suporte</h2><dl class="kv"><dt>Quem atende</dt><dd>Desenvolvedor do sistema</dd><dt>Canal</dt><dd>E-mail e chamada, em horário comercial</dd><dt>Suporte incluído</dt><dd>30 dias após a entrega</dd><dt>Treinamento incluído</dt><dd>Até 6 horas, ou 2 sessões por semana</dd><dt>Depois disso</dt><dd>Atendimento pago ${optLink("sup","(ver suporte estendido)")}</dd></dl><p class="note mt">Canais e prazos reais constarão do contrato. Nesta demonstração são exemplos.</p><button class="btn" data-do="helpTicket">Abrir um chamado (simulado)</button></div>
+ <div class="card"><h2>Perguntas frequentes</h2>${[["Quem aprova as notas?","Quem tem o perfil Aprovador, Gerente ou Administrador. O que cada perfil pode fazer está em Configurações, aba Permissões."],["O que faço quando um pedido dá erro?","Abra Erros e inconsistências. Corrija os dados, peça ao cliente para reenviar ou descarte o pedido."],["Como renovo a licença?","Em Licenciamento, clique em Renovar licença. O sistema continua funcionando durante a renovação; só ficam bloqueados novos usuários e alterações se a licença vencer."],["Perdi o aplicativo do MFA.","Use um código de recuperação. Se não tiver, peça a um administrador para reconfigurar o seu MFA em Usuários e acessos."],["O que é só da Fase 2 ou opcional?","Veja a tela Fases e recursos."]].map(([q,a])=>`<details class="faq"><summary>${q}</summary><p class="note">${a}</p></details>`).join("")}</div></div>`;
+DO.helpTicket=()=>modal("Abrir chamado (simulado)",`<div class="field"><label for="ht">Assunto</label><input type="text" id="ht"></div><div class="field"><label for="hm">Descreva o problema</label><textarea id="hm" rows="3"></textarea></div><p class="note">Demonstração: nada é enviado.</p>`,[{label:"Cancelar"},{label:"Enviar",cls:"primary",fn:()=>{if(!val("ht").trim()){toast("Informe o assunto.","err");return false}audit("Abriu um chamado de suporte");toast("Chamado registrado (simulado).","ok")}}]);
+
+/* ---------- navegação, títulos e permissões ---------- */
+NAV.length=0;NAV.push(["overview","Visão geral"],["orders","Pedidos recebidos"],["approvals","Aprovações","aw"],["errors","Erros e inconsistências","er"],["notes","Notas emitidas"],["clients","Clientes e procurações"],["cancel","Cancelamentos","soon"],["reports","Relatórios","soon"],["health","Saúde do serviço"],["_","Administração"],["license","Licenciamento"],["users","Usuários e acessos"],["email","Contas de e-mail"],["claude","Claude (API)"],["backups","Backups e logs"],["settings","Configurações"],["audit","Auditoria"],["_","Projeto"],["phases","Fases e recursos"],["optional","Serviços opcionais","opt"],["help","Ajuda e suporte"],["_","Minha conta"],["account","Segurança da conta"]);
+Object.assign(TITLES,{cancel:["Cancelamentos","Cancelar notas emitidas, com aprovação do gerente."],reports:["Relatórios","Resumo mensal por cliente, com exportação."],phases:["Fases e recursos","O que faz parte de cada fase do projeto e o que é opcional."],optional:["Serviços opcionais","Extras sob consulta, com orçamento próprio."],help:["Ajuda e suporte","Suporte, treinamento e perguntas frequentes."]});
+Object.assign(VIEW_PERM,{approvals:"approve",errors:"fix",license:"license",cancel:"cancel",reports:"reports"});
+const VIEW_PHASE={cancel:2,reports:2,optional:"o"};
+const ACT_PERM={approve:"approve",reject:"approve",approveAll:"approve",saveOrder:"approve",newOrder:"approve",fixOrder:"fix",askClient:"fix",discard:"fix",exportCsv:"export",newClient:"clients",validateProc:"clients",certRenew:"settings",testConn:"settings",upsTest:"settings",testKey:"claude",resetDemo:"settings",renew:"license",addSeats:"license",devConfirm:"license",newUser:"users",editUser:"users",resetMfa:"users",resetPwd:"users",toggleUser:"users",saveBk:"backups",runBk:"backups",mailBk:"backups",restoreTest:"backups",saveCfg:"settings"};
+const MODAL_PERM=[[/^(Aprovar|Devolver|Rejeitar|Salvar edição)/,"approve"],[/^(Corrigir|Descartar)/,"fix"]];
+function roleUI(root){$$("[data-act]",root).forEach(b=>{const k=ACT_PERM[b.dataset.act];if(k&&!perm(k))b.style.display="none"});
+  $$("button[disabled]",root).forEach(b=>b.style.display="none");
+  $$("select[data-clmode]",root).forEach(s=>{if(!perm("clients"))s.disabled=true});
+  $$("[data-nav]",root).forEach(b=>{if(b.closest("#nav"))return;const k=VIEW_PERM[b.dataset.nav];if(k&&!perm(k))b.style.display="none"});
+  $$(".row,.acts",root).forEach(r=>{if(r.children.length&&[...r.children].every(c=>c.style.display==="none"))r.style.display="none"})}
+function phaseUI(root){$$("option",root).forEach(o=>{if(o.textContent==="Automática"){o.value=o.value||"Automática";o.textContent="Automática (Fase 2)"}})}
+const _paint3=window.paint;
+window.paint=function(){_paint3();const v=$("#view"),ph=VIEW_PHASE[VIEW];
+  if(ph===2)v.insertAdjacentHTML("afterbegin",`<div class="callout ph2b" style="margin-bottom:14px"><span class="ph ph2">Fase 2</span> <b>Prévia.</b> Este recurso não faz parte da entrega inicial (Fase 1). Está aqui para mostrar como ele ficará. ${optLink("","")}</div>`.replace(optLink("",""),`<button class="linkbtn" data-nav="phases">Ver fases</button>`));
+  if(ph==="o")v.insertAdjacentHTML("afterbegin",`<div style="margin-bottom:14px"><button class="linkbtn" data-nav="phases" style="color:var(--primary)">Ver todas as fases do projeto</button></div>`);
+  decorate(v);roleUI(v);phaseUI(v)};
+const _modal3=window.modal;
+window.modal=function(title,body,actions=[]){_modal3(title,body,actions);const r=$("#modalRoot");actions.forEach((a,i)=>{const b=$(`[data-macts="${i}"]`,r),m=MODAL_PERM.find(([re])=>re.test(a.label));if(b&&m&&!perm(m[1]))b.style.display="none"});$$("[data-do]",r).forEach(()=>{})};
+/* acrescenta avisos de "sob consulta" nas telas existentes */
+function decorate(v){
+  const add=(sel,html,where)=>{const e=$(sel,v);if(e)e.insertAdjacentHTML(where||"beforeend",html)};
+  if(VIEW==="backups"){const e=$("#bkcloud",v);if(e){const s=e.closest(".opt").querySelector("small");if(s&&!s.querySelector("[data-do]"))s.insertAdjacentHTML("beforeend"," "+optLink("cloud","Ver detalhes e valores"))}}
+  if(VIEW==="email"){const b=$('[data-do="emailRules"]',v);if(b&&!$("#optImgRow",v))b.parentElement.insertAdjacentHTML("beforebegin",`<div class="opt" id="optImgRow"><div><b>Aceitar imagens (JPG, JPEG, PNG)</b><small>Serviço opcional, sob consulta. ${optLink("img","Ver detalhes")}</small></div><span class="badge b-mute">Não contratado</span></div>`)}
+  if(VIEW==="claude"){const b=$('[data-do="saveClaude"]',v);if(b&&!$("#optImgRow2",v))b.parentElement.insertAdjacentHTML("beforebegin",`<div class="opt" id="optImgRow2"><div><b>Ler imagens (JPG, JPEG, PNG)</b><small>Hoje só o texto dos e-mails é interpretado. Imagens são um serviço opcional, sob consulta. ${optLink("img","Ver detalhes")}</small></div><span class="badge b-mute">Não contratado</span></div>`)}
+  if(VIEW==="license"){$$("td,small",v).forEach(e=>{if(e.children.length===0&&/opcional, sob consulta/.test(e.textContent)){e.innerHTML=e.textContent.replace("opcional, sob consulta",`opcional, sob consulta · ${optLink("cloud","detalhes")}`)}});
+    const row=$$("tr",v).find(r=>/Pagamento mensal opcional/.test(r.textContent));if(row&&!$("#optMulti",v))row.insertAdjacentHTML("beforebegin",`<tr id="optMulti"><td>Acima de 15 usuários ou outra empresa</td><td class="num">${optLink("multi","Sob consulta")}</td></tr>`)}
+  if(VIEW==="optional"&&S.quotes.some(q=>q.st==="Enviado")&&ROLE==="Administrador")add("#view > .card:last-child",`<div class="callout mt"><b>Lado do desenvolvedor (simulação)</b><p class="note">Na vida real, o desenvolvedor responde o orçamento fora deste painel.</p><button class="btn sm" data-do="devQuote">Marcar como respondido</button></div>`)}
+function ext3(){S.cancels=[];S.quotes=[];S.chartPref={};S.phTab="all"}
+const _s3=window.seed;window.seed=function(){_s3();ext3()};ext3();
+window.addEventListener("hashchange",()=>{});
 window.startLogin();
 })();
 
