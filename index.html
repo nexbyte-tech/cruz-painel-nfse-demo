@@ -785,7 +785,7 @@ const css3=document.createElement("style");css3.textContent=`
 .chip.on{border-color:var(--primary);color:var(--primary)}
 svg.ch{width:100%;height:auto;display:block;overflow:visible}
 svg.ch text{fill:var(--muted);font-size:11px;font-family:inherit}
-svg.ch .vl{fill:var(--text);font-weight:700}
+svg.ch .vl{fill:var(--text);font-weight:700;paint-order:stroke;stroke:var(--card);stroke-width:4px;stroke-linejoin:round}
 svg.ch .grid{stroke:var(--border);stroke-width:1}
 svg.ch .ln{fill:none;stroke:var(--bar);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
 svg.ch .ar{fill:var(--bar);opacity:.18}
@@ -828,15 +828,19 @@ img,svg{max-width:100%}
 /* ---------- gráficos ---------- */
 const CH={};
 const brlS=v=>"R$ "+Math.round(v).toLocaleString("pt-BR");
+function chLabels(it,fs,L,W,R,n){const cw=fs*.6,ord=it.map((q,k)=>k).sort((a,b)=>it[b].v-it[a].v),keep=[];
+  it.forEach(q=>{q.w=q.t.length*cw+6;q.x=Math.min(Math.max(q.x,L+q.w/2),W-R-q.w/2+4)});
+  ord.forEach(k=>{const q=it[k];if(q.v===0&&n>12)return;if(keep.every(j=>{const r=it[j];return Math.abs(r.x-q.x)>=(r.w+q.w)/2||Math.abs(r.y-q.y)>=fs+3}))keep.push(k)});
+  return keep.sort((a,b)=>a-b).map(k=>it[k])}
 function chartSvg(id){const {labels,vals,o}=CH[id],p=S.chartPref[id],fmt=o.fmt||(v=>String(v)),W=720,H=o.h||220,L=o.axisW||38,R=12,T=26,B=26,n=vals.length,raw=Math.max(...vals,.0001)/4,mag=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/mag,stp=(f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*mag,mx=stp*4,pw=W-L-R,ph=H-T-B,y=v=>T+ph*(1-v/mx),sw=pw/n,bx=i=>L+i*sw,px=i=>L+(n===1?pw/2:(i+.5)*sw);
   const step=Math.ceil(n/(o.maxLabels||8)),fs=n>20?9:11;
   let g="";[0,.25,.5,.75,1].forEach(f=>{const v=mx*f,yy=y(v),ax=o.axis||(stp<1?(q=>q.toFixed(1).replace('.',',')):(q=>o.fmt&&!o.fmtIsPlain?o.fmt(Math.round(q)):String(Math.round(q))));g+=`<line class="grid" x1="${L}" x2="${W-R}" y1="${yy}" y2="${yy}"/><text x="${L-6}" y="${yy+4}" text-anchor="end">${ax(v)}</text>`});
   let s="";
-  if(p.type==="bar"){vals.forEach((v,i)=>{const cls=(o.today&&i===n-1)?"td":(o.wk&&o.wk[i]?"we":""),h=ph*v/mx,bw=Math.min(sw*.68,46);s+=`<rect class="bar ${cls}" x="${bx(i)+(sw-bw)/2}" y="${T+ph-h}" width="${bw}" height="${Math.max(h,2)}" rx="4"><title>${labels[i]}: ${fmt(v)}</title></rect>`;if(p.vals)s+=`<text class="vl" x="${px(i)}" y="${T+ph-h-5}" text-anchor="middle" style="font-size:${fs}px">${fmt(v)}</text>`})}
-  else{const pts=vals.map((v,i)=>[px(i),y(v)]),line=pts.map((q,i)=>(i?"L":"M")+q[0].toFixed(1)+" "+q[1].toFixed(1)).join(" ");
+  if(p.type==="bar"){const li=[];vals.forEach((v,i)=>{const cls=(o.today&&i===n-1)?"td":(o.wk&&o.wk[i]?"we":""),h=ph*v/mx,bw=Math.min(sw*.68,46);s+=`<rect class="bar ${cls}" x="${bx(i)+(sw-bw)/2}" y="${T+ph-h}" width="${bw}" height="${Math.max(h,2)}" rx="4"><title>${labels[i]}: ${fmt(v)}</title></rect>`;li.push({i,v,x:px(i),y:T+ph-h-5,t:fmt(v)})});if(p.vals)chLabels(li,fs,L,W,R,n).forEach(q=>{s+=`<text class="vl" x="${q.x}" y="${q.y}" text-anchor="middle" style="font-size:${fs}px">${q.t}</text>`})}
+  else{const li=[],pts=vals.map((v,i)=>[px(i),y(v)]),line=pts.map((q,i)=>(i?"L":"M")+q[0].toFixed(1)+" "+q[1].toFixed(1)).join(" ");
     s+=`<path class="ar" d="${line} L${pts[n-1][0].toFixed(1)} ${T+ph} L${pts[0][0].toFixed(1)} ${T+ph} Z"/><path class="ln" d="${line}"/>`;
-    vals.forEach((v,i)=>{const cls=(o.today&&i===n-1)?"td":(o.wk&&o.wk[i]?"we":"");s+=`<circle class="dot ${cls}" cx="${pts[i][0]}" cy="${pts[i][1]}" r="${n>20?3:4.5}"><title>${labels[i]}: ${fmt(v)}</title></circle>`;if(p.vals)s+=`<text class="vl" x="${pts[i][0]}" y="${pts[i][1]-9}" text-anchor="middle" style="font-size:${fs}px">${fmt(v)}</text>`})}
-  let xl="";labels.forEach((l,i)=>{if(i%step===0||i===n-1)xl+=`<text x="${px(i)}" y="${H-8}" text-anchor="middle">${l}</text>`});
+    vals.forEach((v,i)=>{const cls=(o.today&&i===n-1)?"td":(o.wk&&o.wk[i]?"we":"");s+=`<circle class="dot ${cls}" cx="${pts[i][0]}" cy="${pts[i][1]}" r="${n>20?3:4.5}"><title>${labels[i]}: ${fmt(v)}</title></circle>`;li.push({i,v,x:pts[i][0],y:pts[i][1]-9,t:fmt(v)})});if(p.vals)chLabels(li,fs,L,W,R,n).forEach(q=>{s+=`<text class="vl" x="${q.x}" y="${q.y}" text-anchor="middle" style="font-size:${fs}px">${q.t}</text>`})}
+  let xl="";labels.forEach((l,i)=>{if(i%step===0||(i===n-1&&(n-1)%step>=step/2))xl+=`<text x="${px(i)}" y="${H-8}" text-anchor="middle">${l}</text>`});
   return `<svg class="ch" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.aria||"Gráfico")}">${g}${s}${xl}</svg>`}
 function chartBox(id,title,labels,vals,o={}){CH[id]={labels,vals,o};S.chartPref=S.chartPref||{};const p=S.chartPref[id]=S.chartPref[id]||{type:"area",vals:true};
   return `<div class="chw" id="chw_${id}"><div class="spread chhead"><h2>${title}</h2><div class="chtool"><div class="seg" role="group" aria-label="Tipo de gráfico"><button type="button" class="${p.type==="bar"?"on":""}" aria-pressed="${p.type==="bar"}" data-do="chType" data-id="${id}" data-v="bar">Barras</button><button type="button" class="${p.type==="area"?"on":""}" aria-pressed="${p.type==="area"}" data-do="chType" data-id="${id}" data-v="area">Linha/área</button></div><button type="button" class="chip ${p.vals?"on":""}" aria-pressed="${p.vals}" data-do="chVals" data-id="${id}">${p.vals?"Ocultar valores":"Mostrar valores"}</button></div></div><div class="chsvg">${chartSvg(id)}</div>${o.foot?`<div class="note">${o.foot}</div>`:""}</div>`}
