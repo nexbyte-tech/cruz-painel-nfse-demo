@@ -799,6 +799,30 @@ svg.ch rect.bar:hover,svg.ch circle.dot:hover{filter:brightness(1.25)}
 .callout.phob{background:var(--warn-bg);color:var(--warn-text);border-color:var(--warn-dot)}
 ul.tight{margin:6px 0 0 18px;padding:0}ul.tight li{margin:3px 0}
 details.faq{border-bottom:1px solid var(--border);padding:8px 0}details.faq summary{cursor:pointer;font-weight:600}
+
+/* ---- responsivo: telas de 13 a 27 polegadas, tablet e celular ---- */
+:root{--z:1}
+@media(min-width:1700px){:root{--z:1.1}}
+@media(min-width:1920px){:root{--z:1.2}}
+@media(min-width:2300px){:root{--z:1.4}}
+@media(min-width:3000px){:root{--z:1.7}}
+html{zoom:var(--z)}
+.app{min-height:calc(100vh / var(--z))}
+aside{height:calc(100vh / var(--z));overflow-x:hidden;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.28) transparent;overscroll-behavior:contain}
+aside::-webkit-scrollbar{width:6px;height:0}
+aside::-webkit-scrollbar-thumb{background:rgba(255,255,255,.28);border-radius:6px}
+aside::-webkit-scrollbar-track{background:transparent}
+aside>*{min-width:0}
+nav button{gap:8px}
+nav button>span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.modal{max-height:calc(90vh / var(--z))}
+.main{max-width:1760px;width:100%;margin:0 auto}
+img,svg{max-width:100%}
+.grid>*,.row>*{min-width:0}
+.tablewrap{overflow-x:auto;max-width:100%}
+@media(max-height:820px){aside{padding:14px 12px}aside img.logo{max-width:170px;margin-bottom:8px}.sidetitle{margin-bottom:8px}.sidegroup{margin:10px 0 4px 6px}nav button{padding:7px 12px;font-size:14px}.sidefoot{padding-top:10px}}
+@media(max-width:1280px){.main{padding:20px 22px 40px}}
+@media(max-width:560px){.main{padding:12px}.spread{flex-wrap:wrap;gap:8px}h2{font-size:18px}}
 `;document.head.appendChild(css3);
 
 /* ---------- gráficos ---------- */
