@@ -293,7 +293,7 @@ const ADMIN_ONLY=["users","backups","settings"];
 function renderNav(){const c=counts();$("#nav").innerHTML=NAV.map(([id,l,b])=>{if(id==="_")return `<div class="sidegroup">${l}</div>`;
   const badge=b==="aw"&&c.aw?`<span class="pill">${c.aw}</span>`:b==="er"&&c.er?`<span class="pill red">${c.er}</span>`:b==="soon"?`<span class="pill soon">fase 2</span>`:"";
   return `<button data-nav="${id}" class="${VIEW===id?"active":""}" ${VIEW===id?'aria-current="page"':""}><span>${l}</span>${badge}</button>`}).join("")}
-function go(v){if(v==="cancel"){toast("Cancelamentos estão previstos para a fase 2 do projeto.");return}VIEW=v;location.hash=v;$("#side").classList.remove("open");renderNav();paint();window.scrollTo(0,0)}
+function go(v){VIEW=v;location.hash=v;$("#side").classList.remove("open");renderNav();paint();window.scrollTo(0,0)}
 
 /* ============ visões ============ */
 const VIEWS={};
