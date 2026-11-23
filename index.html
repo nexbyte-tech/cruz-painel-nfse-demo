@@ -1305,7 +1305,8 @@ document.head.insertAdjacentHTML("beforeend",`<style>
 .kpis7 .lbl{font-size:13px;color:var(--muted)}
 .kpis7 .v{font-size:26px;font-weight:700;line-height:1.15;margin-top:4px;overflow-wrap:break-word}
 .dw{min-width:0}.dw .chhead{align-items:center}
-.dw .tsel{width:auto;min-width:0;max-width:100%;padding:5px 8px;font-size:13px}
+.chhead .tsel{width:auto!important;flex:none;min-width:0;max-width:100%;padding:5px 28px 5px 10px;font-size:13px}
+.callout.ph2b{margin-bottom:14px}
 svg.g7{width:100%;height:auto;display:block}
 svg.g7 text{fill:var(--muted);font-size:11px;font-family:inherit}
 svg.g7 .gl{stroke:var(--border);stroke-width:1}
@@ -1314,6 +1315,13 @@ svg.g7 .l7{fill:none;stroke:var(--bar);stroke-width:2.5;stroke-linejoin:round}
 svg.g7 .a7{fill:var(--bar);opacity:.18}
 svg.g7 .d7{fill:var(--bar);stroke:var(--card);stroke-width:2}
 svg.g7 text.v7{fill:var(--text);font-weight:700}
+.hb7{display:grid;gap:9px}
+.hr7{display:grid;grid-template-columns:minmax(90px,34%) minmax(0,1fr) auto;align-items:center;gap:10px;font-size:13px}
+.hl7{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
+.ht7{height:16px;background:var(--border);border-radius:5px;overflow:hidden;display:block}
+.ht7 i{display:block;height:100%;background:var(--bar);border-radius:5px}
+.hv7{white-space:nowrap;text-align:right;min-width:48px}
+@media(max-width:600px){.hr7{grid-template-columns:minmax(70px,38%) minmax(0,1fr) auto;gap:6px;font-size:12px}}
 .donut7{display:flex;gap:18px;align-items:center;justify-content:center;flex-wrap:wrap}
 .donut7 svg{width:170px;height:170px;flex:none}
 .leg7{display:grid;gap:6px;font-size:13px;min-width:0}
@@ -1334,12 +1342,12 @@ function g7(type,labels,vals,fmt,aria){
   fmt=fmt||(v=>String(v));const n=vals.length;
   if(!n||vals.every(v=>!v))return '<p class="note">Sem dados no período.</p>';
   if(type==="table")return `<div class="tablewrap"><table><thead><tr><th>Item</th><th class="num">Valor</th></tr></thead><tbody>${labels.map((l,i)=>`<tr><td>${esc(l)}</td><td class="num">${esc(fmt(vals[i]))}</td></tr>`).join("")}</tbody></table></div>`;
-  if(type==="donut"){const pos=vals.map((v,i)=>[v,i]).filter(x=>x[0]>0),tot=pos.reduce((s,x)=>s+x[0],0),r=56,C=2*Math.PI*r;let off=0;
-    const arcs=pos.map(([v,i],k)=>{const len=v/tot*C,s=`<circle cx="85" cy="85" r="${r}" fill="none" stroke="${P7[k%P7.length]}" stroke-width="28" stroke-dasharray="${len.toFixed(2)} ${(C-len).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 85 85)"><title>${esc(labels[i])}: ${esc(fmt(v))}</title></circle>`;off+=len;return s}).join("");
-    return `<div class="donut7"><svg viewBox="0 0 170 170" role="img" aria-label="${esc(aria||"Gráfico de rosca")}"><circle cx="85" cy="85" r="${r}" fill="none" stroke="var(--border)" stroke-width="28"/>${arcs}</svg><div class="leg7">${pos.map(([v,i],k)=>`<div><i style="background:${P7[k%P7.length]}"></i><span>${esc(cut7(labels[i],26))}</span><b>${esc(fmt(v))} · ${Math.round(v/tot*100)}%</b></div>`).join("")}</div></div>`}
-  if(type==="hbar"){const mx=Math.max(...vals,.0001),W=560,L=150,R=84,rh=26,H=n*rh+8,bw=W-L-R;
-    return `<svg class="g7" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(aria||"Gráfico de barras horizontais")}">${vals.map((v,i)=>{const y=i*rh+4,w=Math.max(v/mx*bw,v>0?3:0);return `<text x="${L-8}" y="${y+16}" text-anchor="end">${esc(cut7(labels[i],24))}</text><rect class="b7" x="${L}" y="${y+3}" width="${w.toFixed(1)}" height="${rh-8}" rx="4"><title>${esc(labels[i])}: ${esc(fmt(v))}</title></rect><text class="v7" x="${L+w+6}" y="${y+16}">${esc(fmt(v))}</text>`}).join("")}</svg>`}
-  const W=560,H=210,T=16,B=26,R=10,mx=niceMax7(Math.max(...vals)),ax=[0,.25,.5,.75,1].map(f=>mx*f),L=Math.max(30,Math.max(...ax.map(a=>String(fmt(a)).length))*6.3+12),pw=W-L-R,ph=H-T-B,y=v=>T+ph*(1-v/mx),sw=pw/n,px=i=>L+(i+.5)*sw,step=Math.ceil(n/8),vl=n<=8;
+  if(type==="donut"){const pos=vals.map((v,i)=>[v,i]).filter(x=>x[0]>0),tot=pos.reduce((s,x)=>s+x[0],0),R1=72,R0=44,cx=85,cy=85,pt=(r,a)=>[(cx+r*Math.cos(a)).toFixed(2),(cy+r*Math.sin(a)).toFixed(2)];let a0=-Math.PI/2;
+    const arcs=pos.length===1?`<circle cx="${cx}" cy="${cy}" r="${(R1+R0)/2}" fill="none" stroke="${P7[0]}" stroke-width="${R1-R0}"><title>${esc(labels[pos[0][1]])}: ${esc(fmt(pos[0][0]))}</title></circle>`:pos.map(([v,i],k)=>{const a1=a0+v/tot*2*Math.PI,lg=a1-a0>Math.PI?1:0,o0=pt(R1,a0),o1=pt(R1,a1),i1=pt(R0,a1),i0=pt(R0,a0),d=`M${o0} A${R1} ${R1} 0 ${lg} 1 ${o1} L${i1} A${R0} ${R0} 0 ${lg} 0 ${i0} Z`;a0=a1;return `<path d="${d}" fill="${P7[k%P7.length]}" stroke="var(--card)" stroke-width="1.5"><title>${esc(labels[i])}: ${esc(fmt(v))}</title></path>`}).join("");
+    return `<div class="donut7"><svg viewBox="0 0 170 170" role="img" aria-label="${esc(aria||"Gráfico de rosca")}">${arcs}</svg><div class="leg7">${pos.map(([v,i],k)=>`<div><i style="background:${P7[k%P7.length]}"></i><span>${esc(cut7(labels[i],26))}</span><b>${esc(fmt(v))} · ${Math.round(v/tot*100)}%</b></div>`).join("")}</div></div>`}
+  if(type==="hbar"){const mx=Math.max(...vals,.0001);
+    return `<div class="hb7" role="img" aria-label="${esc(aria||"Gráfico de barras horizontais")}">${vals.map((v,i)=>`<div class="hr7" title="${esc(labels[i])}: ${esc(fmt(v))}"><span class="hl7">${esc(labels[i])}</span><span class="ht7"><i style="width:${v>0?Math.max(v/mx*100,1.5).toFixed(1):0}%"></i></span><b class="hv7">${esc(fmt(v))}</b></div>`).join("")}</div>`}
+  const W=720,H=220,T=16,B=26,R=10,mx=niceMax7(Math.max(...vals)),ax=[0,.25,.5,.75,1].map(f=>mx*f),L=Math.max(30,Math.max(...ax.map(a=>String(fmt(a)).length))*6.3+12),pw=W-L-R,ph=H-T-B,y=v=>T+ph*(1-v/mx),sw=pw/n,px=i=>L+(i+.5)*sw,step=Math.ceil(n/8),vl=n<=8;
   let g=ax.map(a=>`<line class="gl" x1="${L}" x2="${W-R}" y1="${y(a)}" y2="${y(a)}"/><text x="${L-6}" y="${y(a)+4}" text-anchor="end">${esc(fmt(a))}</text>`).join(""),s="";
   if(type==="bar"){const bw=Math.min(sw*.66,44);vals.forEach((v,i)=>{const h=ph*v/mx;s+=`<rect class="b7" x="${(px(i)-bw/2).toFixed(1)}" y="${(T+ph-h).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(h,v>0?2:0).toFixed(1)}" rx="4"><title>${esc(labels[i])}: ${esc(fmt(v))}</title></rect>`;if(vl&&v>0)s+=`<text class="v7" x="${px(i).toFixed(1)}" y="${(T+ph-h-5).toFixed(1)}" text-anchor="middle">${esc(fmt(v))}</text>`})}
   else{const pts=vals.map((v,i)=>[px(i),y(v)]),ln=pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ");
@@ -1356,16 +1364,17 @@ const WK7=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"],WKO=[1,2,3,4,5,6,0];
 const top7=(map,n)=>Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,n);
 const byClient7=(f)=>{const m={};repMonth("").forEach(x=>{m[x.client]=(m[x.client]||0)+f(x)});return top7(m,7)};
 const DW=[
- {id:"nd",title:"Notas emitidas por dia (14 dias)",t:"area",on:true,data:()=>{const d=days14();return{l:d.map(x=>fDate(x).slice(0,5)),v:d.map(x=>S.notes.filter(n=>isoDay(n.date)===isoDay(x)).length)}}},
- {id:"vd",title:"Valor emitido por dia (14 dias)",t:"bar",on:false,fmt:brlS,data:()=>{const d=days14();return{l:d.map(x=>fDate(x).slice(0,5)),v:d.map(x=>S.notes.filter(n=>isoDay(n.date)===isoDay(x)).reduce((s,n)=>s+n.value,0))}}},
+ {id:"nd",ser:true,title:"Notas emitidas por dia (14 dias)",t:"area",on:true,data:()=>{const d=days14();return{l:d.map(x=>fDate(x).slice(0,5)),v:d.map(x=>S.notes.filter(n=>isoDay(n.date)===isoDay(x)).length)}}},
+ {id:"vd",ser:true,title:"Valor emitido por dia (14 dias)",t:"bar",on:false,fmt:brlS,data:()=>{const d=days14();return{l:d.map(x=>fDate(x).slice(0,5)),v:d.map(x=>S.notes.filter(n=>isoDay(n.date)===isoDay(x)).reduce((s,n)=>s+n.value,0))}}},
  {id:"vc",title:"Valor emitido por cliente (mês)",t:"hbar",on:true,fmt:brlS,data:()=>{const r=byClient7(x=>x.value);return{l:r.map(x=>x[0]),v:r.map(x=>x[1])}}},
  {id:"nc",title:"Notas por cliente (mês)",t:"hbar",on:false,data:()=>{const r=byClient7(()=>1);return{l:r.map(x=>x[0]),v:r.map(x=>x[1])}}},
  {id:"sp",title:"Situação dos pedidos",t:"donut",on:true,data:()=>{const k=Object.keys(ST);return{l:k.map(s=>ST[s][1]),v:k.map(s=>S.orders.filter(o=>o.status===s).length)}}},
  {id:"dw",title:"Notas por dia da semana",t:"bar",on:true,data:()=>{const c=[0,0,0,0,0,0,0];S.notes.forEach(n=>c[n.date.getDay()]++);return{l:WKO.map(i=>WK7[i]),v:WKO.map(i=>c[i])}}},
  {id:"tk",title:"Maiores tomadores (valor, mês)",t:"hbar",on:false,fmt:brlS,data:()=>{const m={};repMonth("").forEach(n=>{m[n.taker]=(m[n.taker]||0)+n.value});const r=top7(m,6);return{l:r.map(x=>x[0]),v:r.map(x=>x[1])}}}];
 const ws7=w=>D7().w[w.id]||(D7().w[w.id]={t:w.t,on:w.on});
-const tsel7=(attr,id,cur,lab,extra)=>`<select class="tsel" ${attr}="${id}" aria-label="Tipo de gráfico: ${esc(lab)}">${T7.concat(extra||[]).map(([k,l])=>`<option value="${k}" ${cur===k?"selected":""}>${l}</option>`).join("")}</select>`;
-function dwHtml(w){const st=ws7(w),d=w.data();return `<div class="card dw" id="dw_${w.id}"><div class="spread chhead"><h2>${esc(w.title)}</h2>${tsel7("data-dw",w.id,st.t,w.title)}</div>${g7(st.t,d.l,d.v,w.fmt,w.title)}</div>`}
+const ok7=(t,ser)=>ser&&(t==="hbar"||t==="donut")?"bar":t;
+const tsel7=(attr,id,cur,lab,extra,ser)=>`<select class="tsel" ${attr}="${id}" aria-label="Tipo de gráfico: ${esc(lab)}">${T7.filter(x=>!ser||!["hbar","donut"].includes(x[0])).concat(extra||[]).map(([k,l])=>`<option value="${k}" ${ok7(cur,ser)===k?"selected":""}>${l}</option>`).join("")}</select>`;
+function dwHtml(w){const st=ws7(w),d=w.data();return `<div class="card dw" id="dw_${w.id}"><div class="spread chhead"><h2>${esc(w.title)}</h2>${tsel7("data-dw",w.id,st.t,w.title,null,w.ser)}</div>${g7(ok7(st.t,w.ser),d.l,d.v,w.fmt,w.title)}</div>`}
 
 /* índices e métricas: todos calculados com funções que o sistema já tem */
 function idx7(){
@@ -1417,8 +1426,8 @@ repKpis=function(id,cl){
   return _rk7(id,cl)};
 function rpChart7(id,cl){
   const {L}=repData(cl),pc=(m,f)=>{const r=Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,7);return{l:r.map(x=>x[0]),v:r.map(x=>x[1])}};
-  if(id==="r1"){const d=[...Array(NOW.getDate())].map((_,i)=>new Date(NOW.getFullYear(),NOW.getMonth(),i+1));return{title:"Valor emitido por dia (mês atual)",t:"bar",fmt:brlS,l:d.map(x=>String(x.getDate())),v:d.map(x=>L.filter(n=>isoDay(n.date)===isoDay(x)).reduce((s,n)=>s+n.value,0))}}
-  if(id==="r2"){const d=[...Array(NOW.getDate())].map((_,i)=>new Date(NOW.getFullYear(),NOW.getMonth(),i+1));return{title:"Notas emitidas por dia (mês atual)",t:"area",l:d.map(x=>String(x.getDate())),v:d.map(x=>L.filter(n=>isoDay(n.date)===isoDay(x)).length)}}
+  if(id==="r1"){const d=[...Array(NOW.getDate())].map((_,i)=>new Date(NOW.getFullYear(),NOW.getMonth(),i+1));return{title:"Valor emitido por dia (mês atual)",ser:true,t:"bar",fmt:brlS,l:d.map(x=>String(x.getDate())),v:d.map(x=>L.filter(n=>isoDay(n.date)===isoDay(x)).reduce((s,n)=>s+n.value,0))}}
+  if(id==="r2"){const d=[...Array(NOW.getDate())].map((_,i)=>new Date(NOW.getFullYear(),NOW.getMonth(),i+1));return{title:"Notas emitidas por dia (mês atual)",ser:true,t:"area",l:d.map(x=>String(x.getDate())),v:d.map(x=>L.filter(n=>isoDay(n.date)===isoDay(x)).length)}}
   if(id==="r3"){const O=repOrders(cl),k=Object.keys(ST);return{title:"Pedidos por situação",t:"donut",l:k.map(s=>ST[s][1]),v:k.map(s=>O.filter(o=>o.status===s).length)}}
   if(id==="r4"){const C=repCancels(cl),k=["Aguardando aprovação","Cancelada","Recusado"];return{title:"Cancelamentos por situação",t:"donut",l:k,v:k.map(s=>C.filter(c=>c.st===s).length)}}
   if(id==="r5"){const R=repCerts(cl),f=c=>!c.procExp?"Sem procuração":daysTo(c.procExp)<0?"Vencida":daysTo(c.procExp)<=60?"Vence em 60 dias":"Em dia",k=["Em dia","Vence em 60 dias","Vencida","Sem procuração"];return{title:"Procurações por situação",t:"donut",l:k,v:k.map(s=>R.filter(c=>f(c)===s).length)}}
@@ -1426,7 +1435,7 @@ function rpChart7(id,cl){
   if(id==="r7"){const c=[0,0,0,0,0,0,0];L.forEach(n=>c[n.date.getDay()]++);return{title:"Notas por dia da semana",t:"bar",l:WKO.map(i=>WK7[i]),v:WKO.map(i=>c[i])}}
   const m={};L.forEach(n=>{m[n.client]=(m[n.client]||0)+n.value});const r=pc(m);return{title:"Valor emitido por cliente",t:"hbar",fmt:brlS,...r}}
 function rpCard7(){const d=rpChart7(RP_TAB,RP_CLIENT),cur=D7().rp[RP_TAB]||d.t;
-  return `<div class="card mt rpchart" id="rpc7"><div class="spread chhead"><h2>${esc(d.title)}</h2>${tsel7("data-rpt",RP_TAB,cur,d.title,[["none","Sem gráfico"]])}</div>${cur==="none"?'<p class="note">Gráfico oculto. Escolha um tipo para mostrá-lo de novo.</p>':g7(cur,d.l,d.v,d.fmt,d.title)}</div>`}
+  return `<div class="card mt rpchart" id="rpc7"><div class="spread chhead"><h2>${esc(d.title)}</h2>${tsel7("data-rpt",RP_TAB,cur,d.title,[["none","Sem gráfico"]],d.ser)}</div>${cur==="none"?'<p class="note">Gráfico oculto. Escolha um tipo para mostrá-lo de novo.</p>':g7(ok7(cur,d.ser),d.l,d.v,d.fmt,d.title)}</div>`}
 document.addEventListener("change",e=>{const t=e.target,dw=t.dataset&&t.dataset.dw,rp=t.dataset&&t.dataset.rpt;
   if(dw){ws7(DW.find(w=>w.id===dw)).t=t.value;dsave7();const el=$("#dw_"+dw);if(el){const x=document.createElement("div");x.innerHTML=dwHtml(DW.find(w=>w.id===dw));el.replaceWith(x.firstElementChild);const s=$("#dw_"+dw+" select");if(s)s.focus()}}
   if(rp){D7().rp[rp]=t.value;dsave7();const el=$("#rpc7");if(el){const x=document.createElement("div");x.innerHTML=rpCard7();el.replaceWith(x.firstElementChild);const s=$("#rpc7 select");if(s)s.focus()}}});
@@ -1438,6 +1447,7 @@ function decor7(){const v=$("#view");if(!v)return;
     if(g&&g.classList.contains("grid")){g.style.gridTemplateColumns="minmax(0,1fr)";g.insertAdjacentHTML("afterend",`<div class="mt">${dash7()}</div>`)}
     else v.insertAdjacentHTML("beforeend",`<div class="mt">${dash7()}</div>`)}
   if(VIEW==="reports"&&NIV===2){
+    $("#subtitle").textContent="Oito relatórios com gráficos à escolha e envio ao cliente.";
     const c=$("#chw_rp1",v);if(c)c.closest(".card").remove();
     const call=$(".callout.ph2b",v);if(call)call.innerHTML='<span class="badge b-info">Ampliado</span> <b>Incluído no nível Ampliado.</b> Oito relatórios para a Cruz e para enviar aos clientes dela, cada um com gráfico à escolha (barras, linha, área, rosca ou tabela), e-mail e formato de envio. Os dados abaixo são de demonstração.';
     const kp=$(".grid.g4.mt",v);if(kp)kp.insertAdjacentHTML("afterend",rpCard7());
@@ -1460,7 +1470,7 @@ NEEDS.splice(5,0,
  ["Dashboard avançado, índices e métricas, e gráficos à escolha","Avançada",["Não","Não","Sim"],"overview","Visão geral → Índices e métricas"]);
 NEEDS[NEEDS.length-1][0]="Aprovação automática, resumo diário, Domínio, nuvem, WhatsApp e cobrança";
 NIV_NOTES.overview=()=>NIV===0?"No Essencial o painel é uma lista simples de pedidos e erros, e os alertas por e-mail avisam só os erros. Os gráficos e a visão completa vêm a partir do Padrão.":NIV===1?"No Padrão o gráfico da Visão geral pode ser barras ou linha. O dashboard avançado, o botão de índices e métricas e os demais tipos de gráfico vêm no Ampliado.":"No Ampliado a Visão geral ganha o dashboard avançado, com indicadores do mês, o botão Índices e métricas e gráficos que você escolhe e troca de tipo.";
-NIV_NOTES.reports=()=>NIV===2?"Os relatórios por cliente, com gráficos à escolha, fazem parte do Ampliado.":"";
+NIV_NOTES.reports=()=>"";
 
 window.startLogin();
 })();
