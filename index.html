@@ -22,6 +22,22 @@
   --err-bg:#431a17;--err-text:#ff9f95;--err-dot:#ff6a5b;--info-bg:#17294d;--info-text:#9db8ff;--info-dot:#6b93ff;
   --mute-bg:#1c3533;--mute-text:#b3c3be;--shadow:none;--focus:#8fb0ff;
 }
+[data-theme="grafite"]{
+  --bg:#1b1d20;--card:#26292d;--text:#e8eaed;--muted:#a3a9b0;--border:#3a3e44;--soft:#2f3338;
+  --side:#14161a;--side-active:#2c3036;--side-text:#e8eaed;--side-muted:#b9b38a;
+  --primary:#4db8ae;--primary-text:#06201e;--primary-soft:#27403f;--gold:#b9b38a;--bar:#4db8ae;--weekend:#5b5f66;
+  --warn-bg:#3b3012;--warn-text:#f2c46b;--warn-dot:#e9a62a;--ok-bg:#183425;--ok-text:#7fd9a2;--ok-dot:#38c77a;
+  --err-bg:#43201d;--err-text:#ff9f95;--err-dot:#ff6a5b;--info-bg:#1f2c4a;--info-text:#9db8ff;--info-dot:#6b93ff;
+  --mute-bg:#33373d;--mute-text:#c0c5cb;--shadow:none;--focus:#8fb0ff;
+}
+[data-theme="preto"]{
+  --bg:#000;--card:#101112;--text:#ececec;--muted:#9a9a9a;--border:#2a2b2d;--soft:#18191b;
+  --side:#050505;--side-active:#1c1d1f;--side-text:#ececec;--side-muted:#b9b38a;
+  --primary:#4db8ae;--primary-text:#00110f;--primary-soft:#12302e;--gold:#b9b38a;--bar:#4db8ae;--weekend:#4a4c50;
+  --warn-bg:#2e2509;--warn-text:#f2c46b;--warn-dot:#e9a62a;--ok-bg:#0f2a1a;--ok-text:#7fd9a2;--ok-dot:#38c77a;
+  --err-bg:#361614;--err-text:#ff9f95;--err-dot:#ff6a5b;--info-bg:#15213d;--info-text:#9db8ff;--info-dot:#6b93ff;
+  --mute-bg:#232426;--mute-text:#bdbdbd;--shadow:none;--focus:#8fb0ff;
+}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
 body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.45}
@@ -398,7 +414,7 @@ VIEWS.settings=()=>{const c=S.cfg;const sw=(id,t,s,on)=>`<div class="opt"><div><
  <div class="card"><h2>Alertas</h2>${sw("aCert","Certificado A1 perto de vencer","Avisa antes do vencimento",c.alertCert)}<div class="field mt"><label for="cWarn">Avisar com quantos dias de antecedência</label><input type="number" id="cWarn" min="7" max="120" value="${c.certWarn}"></div>${sw("aStuck","Pedido parado aguardando aprovação","Avisa quando passa do tempo definido",c.alertStuck)}<div class="field mt"><label for="cWait">Tempo máximo parado (horas)</label><input type="number" id="cWait" min="1" max="48" value="${c.waitHours}"></div>${sw("aBk","Falha de backup","Avisa por e-mail e no painel",c.alertBackup)}${sw("aCl","Consumo do Claude perto do limite (70% e 90%)","Evita surpresa na fatura",c.alertClaude)}
   <div class="field mt"><label for="cNot">Enviar alertas para</label><input type="text" id="cNot" value="${esc(c.notifyTo)}"></div></div>
  <div class="card"><h2>Claude e aparência</h2><div class="field"><label>Chave da API do Claude</label><div class="row"><input type="text" value="sk-ant-••••••••••••••••••••" disabled style="flex:1"><button class="btn sm" data-act="testKey">Testar chave</button></div></div><div class="field"><label for="cClaude">Limite mensal de consumo (US$)</label><input type="number" id="cClaude" min="5" max="500" value="${c.claudeLimit}"></div>
-  <div class="field"><label for="cTheme">Tema</label><select id="cTheme"><option value="light" ${document.documentElement.dataset.theme==="light"?"selected":""}>Claro</option><option value="dark" ${document.documentElement.dataset.theme==="dark"?"selected":""}>Escuro</option></select></div>
+  <div class="field"><label for="cTheme">Tema</label><select id="cTheme">${TEMAS.map(x=>`<option value="${x[0]}" ${document.documentElement.dataset.theme===x[0]?"selected":""}>${x[1]}</option>`).join("")}</select></div>
   <div class="row"><button class="btn primary" data-act="saveCfg" ${can.admin()?"":"disabled"}>Salvar configurações</button></div></div></div>
  <div class="card mt"><h2>Sobre esta demonstração <span class="tag-demo">simulada</span></h2><p>Este painel é um modelo navegável para apresentar o projeto. Cada clique, formulário, alerta e valor funciona dentro desta página, mas <b>nenhum dado é real</b>: nomes, CNPJs, e-mails, notas e números são fictícios, e nada é enviado a servidores, ao Emissor Nacional, ao OneDrive ou ao Claude. Na versão final, os mesmos recursos serão ligados às ferramentas reais da Cruz.</p><button class="btn" data-act="resetDemo">Restaurar dados da demonstração</button></div>`};
 
@@ -478,9 +494,10 @@ document.addEventListener("change",e=>{const m=e.target.dataset.clmode;if(m){con
   if(e.target.id==="bkcloud"&&e.target.checked)toast("Backup em nuvem é um serviço opcional, contratado à parte (sob consulta).","warn")});
 
 /* ============ tema, perfil, login, init ============ */
-function setTheme(t){document.documentElement.dataset.theme=t;$("#themeBtn").textContent=t==="dark"?"☀️ Claro":"🌙 Escuro";try{localStorage.setItem("cruz-demo-theme",t)}catch(e){}}
+const TEMAS=[["light","Claro","☀️"],["dark","Escuro","🌙"],["grafite","Grafite","🌫️"],["preto","Preto","🌑"]];
+function setTheme(t){if(!TEMAS.some(x=>x[0]===t))t="light";document.documentElement.dataset.theme=t;const i=TEMAS.findIndex(x=>x[0]===t),n=TEMAS[(i+1)%TEMAS.length];$("#themeBtn").textContent=n[2]+" "+n[1];$("#themeBtn").setAttribute("aria-label","Tema atual: "+TEMAS[i][1]+". Trocar para "+n[1]);try{localStorage.setItem("cruz-demo-theme",t)}catch(e){}}
 (function init(){let t="light";try{t=localStorage.getItem("cruz-demo-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}catch(e){}
-  setTheme(t);$("#themeBtn").addEventListener("click",()=>{setTheme(document.documentElement.dataset.theme==="dark"?"light":"dark");if(VIEW==="settings")paint()});
+  setTheme(t);$("#themeBtn").addEventListener("click",()=>{{const i=TEMAS.findIndex(x=>x[0]===document.documentElement.dataset.theme);setTheme(TEMAS[(i+1)%TEMAS.length][0])}if(VIEW==="settings")paint()});
   $("#hamb").addEventListener("click",()=>$("#side").classList.toggle("open"));
   $("#bell").addEventListener("click",e=>{e.stopPropagation();$("#notifPanel").classList.toggle("hide")});
   $("#roleSel").addEventListener("change",e=>{ROLE=e.target.value;$("#whoRole").textContent=ROLES[ROLE];toast(`Agora você vê o painel como: ${ROLES[ROLE]}.`);renderNav();paint()});
@@ -751,7 +768,7 @@ VIEWS.backups=()=>{const b=S.bk,adm=can.admin()||perm("backups"),pctc=b.cloudUse
 /* --- Configurações (abas) --- */
 VIEWS.settings=()=>{const c=S.cfg,s=S.sec;if(SET_TAB==="wa"&&ROLE!=="Administrador")SET_TAB="geral";const head=tabs(SET_TAB,[["geral","Geral e alertas"],["seg","Segurança e senhas"],["emissor","Emissor e certificado"],["od","OneDrive"],["perm","Permissões"],["sobre","Sobre"],...(ROLE==="Administrador"?[["wa","WhatsApp"]]:[])],"tabSet");if(SET_TAB==="wa")return waView(head);
   if(SET_TAB==="geral")return head+`<div class="grid g2"><div class="card"><h2>Aprovação das notas</h2><div class="field"><label for="cMode">Modo padrão</label><select id="cMode"><option ${c.mode==="Manual"?"selected":""}>Manual</option><option ${c.mode==="Automática"?"selected":""}>Automática</option></select></div><div class="field"><label for="cAuto">Passar para automático após (dias de acompanhamento)</label><select id="cAuto">${["30","60","90"].map(x=>`<option ${c.autoAfter===x?"selected":""}>${x}</option>`).join("")}</select></div><div class="field"><label for="cLimit">Valor acima do qual exige aprovação do gerente (R$)</label><input type="text" id="cLimit" value="${c.limit.toLocaleString("pt-BR",{minimumFractionDigits:2})}"></div><div class="field"><label for="cWin">Quando o sistema processa pedidos</label><select id="cWin">${["24 horas por dia","Horário comercial (8h às 18h)"].map(x=>`<option ${c.window===x?"selected":""}>${x}</option>`).join("")}</select></div><p class="note">Contas de e-mail e a chave do Claude ficam nas telas próprias do menu Administração.</p></div>
-  <div class="card"><h2>Alertas</h2>${tog("aCert","Certificado A1 perto de vencer","",c.alertCert)}<div class="field mt"><label for="cWarn">Avisar com quantos dias de antecedência</label><input type="number" id="cWarn" min="7" max="120" value="${c.certWarn}"></div>${tog("aStuck","Pedido parado aguardando aprovação","",c.alertStuck)}<div class="field mt"><label for="cWait">Tempo máximo parado (horas)</label><input type="number" id="cWait" min="1" max="48" value="${c.waitHours}"></div>${tog("aBk","Falha de backup","Avisa por e-mail e no painel",c.alertBackup)}${tog("aCl","Consumo do Claude perto do limite (70% e 90%)","",c.alertClaude)}<div class="field mt"><label for="cNot">Enviar alertas para</label><input type="text" id="cNot" value="${esc(c.notifyTo)}"></div><div class="field"><label for="cTheme">Tema</label><select id="cTheme"><option value="light" ${document.documentElement.dataset.theme==="light"?"selected":""}>Claro</option><option value="dark" ${document.documentElement.dataset.theme==="dark"?"selected":""}>Escuro</option></select></div><button class="btn primary" data-do="saveGeral">Salvar</button></div></div>`;
+  <div class="card"><h2>Alertas</h2>${tog("aCert","Certificado A1 perto de vencer","",c.alertCert)}<div class="field mt"><label for="cWarn">Avisar com quantos dias de antecedência</label><input type="number" id="cWarn" min="7" max="120" value="${c.certWarn}"></div>${tog("aStuck","Pedido parado aguardando aprovação","",c.alertStuck)}<div class="field mt"><label for="cWait">Tempo máximo parado (horas)</label><input type="number" id="cWait" min="1" max="48" value="${c.waitHours}"></div>${tog("aBk","Falha de backup","Avisa por e-mail e no painel",c.alertBackup)}${tog("aCl","Consumo do Claude perto do limite (70% e 90%)","",c.alertClaude)}<div class="field mt"><label for="cNot">Enviar alertas para</label><input type="text" id="cNot" value="${esc(c.notifyTo)}"></div><div class="field"><label for="cTheme">Tema</label><select id="cTheme">${TEMAS.map(x=>`<option value="${x[0]}" ${document.documentElement.dataset.theme===x[0]?"selected":""}>${x[1]}</option>`).join("")}</select></div><button class="btn primary" data-do="saveGeral">Salvar</button></div></div>`;
   if(SET_TAB==="seg")return head+`<div class="grid g2"><div class="card"><h2>Política de senhas e acesso</h2><div class="form2"><div class="field"><label for="sMin">Tamanho mínimo da senha</label><input type="number" id="sMin" min="8" max="32" value="${s.pwMin}"><span class="hint">Nunca menos que 8.</span></div><div class="field"><label for="sLvl">Força mínima exigida</label><select id="sLvl">${[1,2,3,4].map(i=>`<option value="${i}" ${s.pwLevel===i?"selected":""}>${LVL[i]}</option>`).join("")}</select></div><div class="field"><label for="sExp">Senha expira em (dias, 0 = nunca)</label><input type="number" id="sExp" min="0" max="365" value="${s.expDays}"></div><div class="field"><label for="sIdle">Encerrar sessão parada após (min)</label><input type="number" id="sIdle" min="5" max="240" value="${s.idleMin}"></div><div class="field"><label for="sFail">Bloquear após tentativas erradas</label><input type="number" id="sFail" min="3" max="10" value="${s.maxFails}"></div><div class="field"><label for="sLock">Tempo de bloqueio (min)</label><input type="number" id="sLock" min="1" max="120" value="${s.lockMin}"></div></div>${tog("sMfa","MFA obrigatório para todos","Todos precisam do aplicativo autenticador",s.mfaReq)}${tog("sForce","Exigir troca de senha no primeiro login","",s.forceChange)}${tog("sLan","Aceitar acesso só da rede interna","Bloqueia logins de fora do escritório",s.lanOnly)}<button class="btn primary mt" data-do="saveSec">Salvar política</button></div>
   <div class="card"><h2>Testar a política</h2><p class="note">Digite uma senha para ver como ela é avaliada com as regras salvas. Nada é guardado.</p>${pwField("sTest","Senha de teste")}<button class="btn sm" data-do="genPwTo" data-for="sTest">Gerar senha forte</button></div></div>`;
   if(SET_TAB==="emissor"){const e=S.emissor;return head+`<div class="grid g2"><div class="card"><h2>Emissor Nacional de NFS-e</h2><div class="field"><label for="eEnv">Ambiente</label><select id="eEnv">${["Produção restrita (testes)","Produção"].map(x=>`<option ${e.env===x?"selected":""}>${x}</option>`).join("")}</select></div><div class="field"><label>Município</label><input type="text" value="${esc(e.city)}" disabled></div><div class="form2"><div class="field"><label for="eTry">Tentativas em caso de falha</label><input type="number" id="eTry" min="1" max="10" value="${e.tries}"></div><div class="field"><label for="eGap">Intervalo entre tentativas (min)</label><input type="number" id="eGap" min="1" max="60" value="${e.gap}"></div><div class="field"><label for="eTime">Tempo limite (segundos)</label><input type="number" id="eTime" min="10" max="300" value="${e.timeout}"></div></div><div class="row"><button class="btn primary" data-do="saveEmissor">Salvar</button><button class="btn" data-do="certTest">Testar assinatura e conexão</button></div></div>
@@ -1185,6 +1202,19 @@ th{white-space:nowrap}
 body[data-view=cancel] .grid.g2{grid-template-columns:3fr 2fr}
 body[data-view=cancel] td .note{white-space:normal}
 @media(max-width:900px){body[data-view=cancel] .grid.g2{grid-template-columns:1fr}.lvlbar{padding:8px 10px}}
+
+/* Parte 6: cartões de serviços opcionais e de terceiros alinhados */
+.card.opt{padding:18px 20px;border-bottom:1px solid var(--border);text-align:left;align-items:stretch;gap:10px}
+.card.opt>.spread:first-child{flex-wrap:nowrap}
+.card.opt>b{display:block;line-height:1.3}
+.card.opt>.note.grow{display:block;flex:1;margin:0}
+.card.opt>.spread:last-child{flex-wrap:nowrap;margin-top:auto;padding-top:4px}
+.card.opt .badge{white-space:nowrap}
+.card.opt .btn{white-space:nowrap;flex:none}
+@supports(grid-template-rows:subgrid){
+ .grid.g3>.card.opt{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:subgrid;grid-row:span 4;row-gap:10px}
+ .grid.g3>.card.opt>.spread:last-child{align-self:end;margin-top:0}
+}
 </style>`);
 function licModsFor(n){const e=n===0;return[
  ["Emissão assistida de NFS-e",true,"incluso, com aprovação humana em toda nota"],
