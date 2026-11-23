@@ -612,7 +612,7 @@ function qrSvg(seed){const n=29,s=6;let x=seed,r="";const rnd=()=>(x=(x*1664525+
   return `<div class="qr" role="img" aria-label="QR code de demonstração"><svg viewBox="0 0 ${n*s} ${n*s}" xmlns="http://www.w3.org/2000/svg">${r}</svg></div>`}
 const LG={step:"cred",user:null,fails:0,lock:0,email:"sena@cruz.example"};
 let authTimer=null;
-const authBox=()=>`<div class="authbox"><b>Aplicativo autenticador (simulado)</b><div class="code" id="acode">${totp().replace(/(\d{3})(\d{3})/,"$1 $2")}</div><div>O código muda a cada 30 segundos. Renova em <span id="aleft">${totpLeft()}</span> s.</div><div class="tm"><i id="abar" style="width:${totpLeft()/30*100}%"></i></div></div>`;
+const authBox=()=>`<div class="authbox"><b>Aplicativo autenticador (simulado)</b><div class="code" id="acode">${totp().replace(/(\d{3})(\d{3})/,"$1 $2")}</div><div><button type="button" class="btn sm primary" data-do="fillMfa">Copiar código para o campo</button></div><div>O código muda a cada 30 segundos. Renova em <span id="aleft">${totpLeft()}</span> s.</div><div class="tm"><i id="abar" style="width:${totpLeft()/30*100}%"></i></div></div>`;
 function drawLogin(){const L=$("#login"),logo=$(".logo").src;
   const head=`<img alt="Cruz Sociedade de Contadores" src="${logo}"><h2 style="margin:0 0 4px">Painel de NFS-e</h2><p class="note" style="margin-top:0">Demonstração · dados simulados</p>`;
   const lockTxt=LG.lock>Date.now()?`<div class="callout warn" id="lockmsg">Muitas tentativas. Aguarde <span id="lk">${Math.ceil((LG.lock-Date.now())/1000)}</span> s para tentar de novo.</div>`:"";
@@ -965,7 +965,7 @@ VIEWS.cancel=()=>{const can_=perm("cancel"),done=new Set(S.cancels.filter(c=>c.s
   return `<div class="callout ph2b"><span class="ph ph2">Fase 2</span> <b>Prévia.</b> Fluxo completo de cancelamento de NFS-e: pedido, aprovação do gerente, envio ao Emissor Nacional (simulado) e aviso ao cliente. As regras e os prazos reais dependem do município e serão confirmados nos testes com a Cruz.</div>
   <div class="card mt"><h2>Como funciona</h2><ol class="steps4">${[["1","Solicitar","Quem tem permissão escolhe a nota, o motivo e escreve a justificativa."],["2","Aprovar","O gerente confere e aprova ou recusa. Sem aprovação nada segue."],["3","Cancelar no Emissor","O sistema envia o pedido ao Emissor Nacional e guarda o protocolo."],["4","Avisar o cliente","Se marcado, o cliente recebe o aviso por e-mail. Depois pode ser emitida uma nota nova."]].map(x=>`<li><span class="stepn">${x[0]}</span><div><b>${x[1]}</b><small>${x[2]}</small></div></li>`).join("")}</ol></div>
   <div class="grid g4 mt">${k.map(([l,v])=>`<div class="card kpi"><div class="lbl">${l}</div><div class="num" style="font-size:${String(v).length>4?24:34}px">${v}</div></div>`).join("")}</div>
-  <div class="grid g2 mt"><div class="card"><h2>Notas que podem ser canceladas</h2><div class="tablewrap"><table><thead><tr><th>Nº</th><th>Cliente</th><th class="num">Valor</th><th></th></tr></thead><tbody>${el.map(n=>{const d=Math.floor((NOW-n.date)/864e5);return `<tr><td>${n.n}<div class="note">${fDT(n.date)} · há ${d} dia${d===1?"":"s"}</div></td><td>${esc(n.client)}<div class="note">${esc(n.taker)}</div></td><td class="num">${brl(n.value)}</td><td>${done.has(n.n)?'<span class="badge b-mute">Em andamento</span>':d>CN_DAYS?'<span class="badge b-err">Fora do prazo</span>':`<button class="btn sm danger" data-do="cnReq" data-n="${n.n}">Solicitar cancelamento</button>`}</td></tr>`}).join("")}</tbody></table></div></div>
+  <div class="grid g2 mt"><div class="card"><h2>Notas que podem ser canceladas</h2><div class="tablewrap"><table><thead><tr><th>Nº</th><th>Cliente</th><th class="num">Valor</th><th></th></tr></thead><tbody>${el.map(n=>{const d=Math.floor((NOW-n.date)/864e5);return `<tr><td>${n.n}<div class="note">${fDT(n.date)} · ${d===0?"hoje":`há ${d} dia${d===1?"":"s"}`}</div></td><td>${esc(n.client)}<div class="note">${esc(n.taker)}</div></td><td class="num">${brl(n.value)}</td><td>${done.has(n.n)?'<span class="badge b-mute">Em andamento</span>':d>CN_DAYS?'<span class="badge b-err">Fora do prazo</span>':`<button class="btn sm danger" data-do="cnReq" data-n="${n.n}">Solicitar cancelamento</button>`}</td></tr>`}).join("")}</tbody></table></div></div>
   <div class="card"><h2>Pedidos de cancelamento</h2>${C.length?C.map((c,i)=>`<div class="cnreq"><div class="spread"><div><b>NFS-e ${c.n}</b> · ${esc(c.client)}<small>${esc(c.reason)} · por ${esc(c.by)} em ${fDT(c.t)}</small><small>${esc(c.why)}</small>${c.proto?`<small>Protocolo do Emissor (demonstração): ${c.proto}</small>`:""}</div><span class="badge ${c.st==="Cancelada"?"b-ok":c.st==="Recusado"?"b-err":"b-warn"}">${c.st}</span></div><div class="tl" aria-label="Andamento">${cnSteps(c).map(([l,ok])=>`<span class="${ok?"on":""}">${ok?"✓":"•"} ${l}</span>`).join("")}</div>${c.st==="Aguardando aprovação"&&can_&&mgr?`<div class="row mt" style="justify-content:flex-end"><button class="btn sm" data-do="cnNo" data-i="${i}">Recusar</button><button class="btn sm primary" data-do="cnYes" data-i="${i}">Aprovar e cancelar</button></div>`:c.st==="Aguardando aprovação"?'<p class="note mt">Aguardando um gerente aprovar.</p>':""}${c.st==="Cancelada"&&!c.notified&&can_?`<div class="row mt" style="justify-content:flex-end"><button class="btn sm" data-do="cnNotify" data-i="${i}">Avisar o cliente</button></div>`:""}</div>`).join(""):'<p class="note">Nenhum pedido de cancelamento. Escolha uma nota ao lado para ver o fluxo funcionando.</p>'}${can_?"":'<p class="note mt">Seu perfil só consulta esta tela.</p>'}</div></div>
   <div class="card mt"><h2>Regras desta prévia</h2><ul class="tight"><li>Prazo para solicitar: <b>${CN_DAYS} dias</b> após a emissão (ajustável conforme o município).</li><li>Aprovação obrigatória de gerente ou administrador. Quem solicita não aprova o próprio pedido.</li><li>Justificativa com pelo menos 15 caracteres, guardada na auditoria.</li><li>A nota cancelada sai dos relatórios do mês.</li><li>Notas já com <b>guia paga</b> ou com <b>regra própria do município</b> podem exigir pedido direto na prefeitura. O sistema avisa quando souber.</li></ul></div>`};
 DO.cnReq=t=>{const n=S.notes.find(x=>x.n==t.dataset.n);modal(`Cancelar a NFS-e ${n.n}`,`<p class="note">${esc(n.client)} · tomador ${esc(n.taker)} · ${brl(n.value)}</p><div class="field"><label for="cr">Motivo</label><select id="cr">${["Erro nos dados do tomador","Valor incorreto","Duplicidade","Serviço não prestado"].map(x=>`<option>${x}</option>`).join("")}</select></div><div class="field"><label for="cw">Justificativa (mínimo 15 caracteres)</label><textarea id="cw" rows="3"></textarea></div>${tog("cnRe","Preparar uma nota substituta","Depois do cancelamento, o pedido volta para a fila de aprovações com os dados corrigidos.",false)}${tog("cnAv","Avisar o cliente por e-mail ao cancelar","",true)}<p class="note mt">O gerente precisa aprovar antes de o pedido seguir ao Emissor Nacional.</p>`,
@@ -1003,9 +1003,9 @@ VIEWS.reports=()=>{
   ${tabs(RP_TAB,RP_LIST.map(x=>[x[0],x[1]]),"tabRp")}
   <div class="spread mt"><div><h2 style="margin:0">${cur[1]}</h2><span class="note">${cur[2]}</span></div><div class="row"><select id="rpc" style="width:auto" aria-label="Cliente do relatório"><option value="">Todos os clientes</option>${S.clients.map(c=>`<option ${RP_CLIENT===c.name?"selected":""}>${esc(c.name)}</option>`).join("")}</select>${pm?`<button class="btn" data-do="rpCsv">Baixar CSV</button><button class="btn primary" data-do="rpSend">Enviar ao cliente</button>`:""}</div></div>
   <div class="grid g4 mt">${K.map(([l,v])=>`<div class="card kpi"><div class="lbl">${l}</div><div class="num" style="font-size:${String(v).length>6?24:34}px">${v}</div></div>`).join("")}</div>
-  ${RP_TAB==="r1"?`<div class="card mt">${chartBox("rp1","Valor emitido por dia (mês atual, R$)",days.map(d=>String(d.getDate())),dv,{fmt:brlS,axisW:56,maxLabels:12,today:false,aria:"Valor emitido por dia",foot:"Dias sem notas aparecem com valor zero"})}</div>`:""}
+  ${RP_TAB==="r1"?`<div class="card mt">${chartBox("rp1","Valor emitido por dia (mês atual, R$)",days.map(d=>String(d.getDate())),dv,{fmt:brlS,axisW:76,maxLabels:12,today:false,aria:"Valor emitido por dia",foot:"Dias sem notas aparecem com valor zero"})}</div>`:""}
   <div class="card mt">${repTbl(T)}</div>
-  <div class="grid g2 mt"><div class="card"><h2>Envio automático ao cliente</h2>${tog("rpAuto","Enviar o resumo mensal no 1º dia útil","Cada cliente recebe só os próprios dados, no e-mail cadastrado dele.",S.rpAuto,!pm)}<p class="note mt">Fica ativo na Fase 2. Nesta prévia a opção só registra a escolha.</p></div>
+  <div class="grid g2 mt"><div class="card"><h2>Envio automático ao cliente</h2>${tog("rpAuto","Enviar o resumo mensal no 1º dia útil","Cada cliente recebe só os próprios dados, no e-mail cadastrado dele.",S.rpAuto,!pm)}<p class="note mt">Relatórios por cliente ficam fora dos níveis (sob consulta). Nesta prévia a opção só registra a escolha.</p></div>
   <div class="card"><h2>Últimos envios</h2>${S.rpSent.length?`<div class="tablewrap"><table><thead><tr><th>Quando</th><th>Relatório</th><th>Para</th><th>Formato</th></tr></thead><tbody>${S.rpSent.map(s=>`<tr><td>${fDT(s.t)}</td><td>${esc(s.rep)}</td><td>${esc(s.to)}<div class="note">${esc(s.client)}</div></td><td>${s.fmt}</td></tr>`).join("")}</tbody></table></div>`:'<p class="note">Nenhum envio ainda. Use “Enviar ao cliente”.</p>'}</div></div>`};
 DO.tabRp=t=>{RP_TAB=t.dataset.t;paint()};
 document.addEventListener("change",e=>{if(e.target.id==="rpc"){RP_CLIENT=e.target.value;paint()}if(e.target.id==="rpAuto"){S.rpAuto=e.target.checked;audit(`${S.rpAuto?"Ativou":"Desativou"} o envio automático do resumo mensal`);toast(S.rpAuto?"Envio automático ativado (prévia).":"Envio automático desativado.","ok")}});
@@ -1017,7 +1017,7 @@ DO.rpSend=()=>{const cur=RP_LIST.find(x=>x[0]===RP_TAB),first=RP_CLIENT||S.clien
 
 /* ---------- ajuda ---------- */
 VIEWS.help=()=>`<div class="grid g2"><div class="card"><h2>Suporte</h2><dl class="kv"><dt>Quem atende</dt><dd>Desenvolvedor do sistema</dd><dt>Canal</dt><dd>E-mail e chamada, em horário comercial</dd><dt>Suporte incluído</dt><dd>30 dias após a entrega</dd><dt>Treinamento incluído</dt><dd>Até 6 horas, ou 2 sessões por semana</dd><dt>Depois disso</dt><dd>Atendimento pago ${optLink("sup","(ver suporte estendido)")}</dd></dl><p class="note mt">Canais e prazos reais constarão do contrato. Nesta demonstração são exemplos.</p><button class="btn" data-do="helpTicket">Abrir um chamado (simulado)</button></div>
- <div class="card"><h2>Perguntas frequentes</h2>${[["Quem aprova as notas?","Quem tem o perfil Aprovador, Gerente ou Administrador. O que cada perfil pode fazer está em Configurações, aba Permissões."],["O que faço quando um pedido dá erro?","Abra Erros e inconsistências. Corrija os dados, peça ao cliente para reenviar ou descarte o pedido."],["Como renovo a licença?","Em Licenciamento, clique em Renovar licença. O sistema continua funcionando durante a renovação; só ficam bloqueados novos usuários e alterações se a licença vencer."],["Perdi o aplicativo do MFA.","Use um código de recuperação. Se não tiver, peça a um administrador para reconfigurar o seu MFA em Usuários e acessos."],["O que é só da Fase 2 ou opcional?","Veja a tela Fases e recursos."]].map(([q,a])=>`<details class="faq"><summary>${q}</summary><p class="note">${a}</p></details>`).join("")}</div></div>`;
+ <div class="card"><h2>Perguntas frequentes</h2>${[["Quem aprova as notas?","Quem tem o perfil Aprovador, Gerente ou Administrador. O que cada perfil pode fazer está em Configurações, aba Permissões."],["O que faço quando um pedido dá erro?","Abra Erros e inconsistências. Corrija os dados, peça ao cliente para reenviar ou descarte o pedido."],["Como renovo a licença?","Em Licenciamento, clique em Renovar licença. O sistema continua funcionando durante a renovação; só ficam bloqueados novos usuários e alterações se a licença vencer."],["Perdi o aplicativo do MFA.","Use um código de recuperação. Se não tiver, peça a um administrador para reconfigurar o seu MFA em Usuários e acessos."],["O que muda em cada nível?","Veja a tela Níveis e recursos: ela compara o Essencial, o Padrão e o Ampliado e mostra o que fica fora dos níveis."]].map(([q,a])=>`<details class="faq"><summary>${q}</summary><p class="note">${a}</p></details>`).join("")}</div></div>`;
 DO.helpTicket=()=>modal("Abrir chamado (simulado)",`<div class="field"><label for="ht">Assunto</label><input type="text" id="ht"></div><div class="field"><label for="hm">Descreva o problema</label><textarea id="hm" rows="3"></textarea></div><p class="note">Demonstração: nada é enviado.</p>`,[{label:"Cancelar"},{label:"Enviar",cls:"primary",fn:()=>{if(!val("ht").trim()){toast("Informe o assunto.","err");return false}audit("Abriu um chamado de suporte");toast("Chamado registrado (simulado).","ok")}}]);
 
 /* ---------- navegação, títulos e permissões ---------- */
@@ -1161,9 +1161,45 @@ window.paint=function(){
 function lvlDecor(){
   $$(".ph2").forEach(e=>{e.textContent=VIEW==="reports"?"Fora dos níveis":"Padrão e Ampliado"});
   $$("#nav button").forEach(b=>{const p=$(".pill.soon",b);if(!p)return;if(b.dataset.nav==="cancel")p.textContent="Padrão+";else if(b.dataset.nav==="reports")p.textContent="sob consulta"});
-  $$("option").forEach(o=>{o.textContent=o.textContent.replace("(Fase 2)","(fora dos níveis)")});
+  $$("option").forEach(o=>{o.textContent=o.textContent.replace("(Fase 2)","(extra)")});
   $$("button.linkbtn[data-nav=phases]").forEach(b=>{if(/fases/i.test(b.textContent)&&!b.closest(".lvlbar"))b.textContent="Ver níveis e recursos"})}
 
+
+DO.fillMfa=()=>{const c=$("#lc");if(!c)return;const v=totp();c.value=v;try{navigator.clipboard&&navigator.clipboard.writeText(v)}catch(e){}c.focus();toast("Código copiado para o campo.","ok")};
+
+/* ===== Parte 5 (v11.1): alinhamento de layouts, colunas e textos ===== */
+document.head.insertAdjacentHTML("beforeend",`<style>
+.grid>.card{align-self:stretch}
+td .btn,td button{white-space:nowrap}
+body[data-view=users] td .row{flex-wrap:nowrap;justify-content:flex-end}
+body[data-view=users] td:last-child{width:1%}
+body[data-view=clients] td .btn{white-space:normal;line-height:1.2}
+body[data-view=clients] td:nth-child(2){white-space:nowrap}
+body[data-view=clients] td select{width:170px!important;min-width:0!important;max-width:170px}
+body[data-view=clients] th{white-space:normal}
+body[data-view=clients] td:nth-child(5){width:70px}
+body[data-view=cancel] td:first-child .note{white-space:nowrap}
+td.nw{white-space:nowrap}
+#view>.lvlbar{margin-bottom:14px}
+th{white-space:nowrap}
+body[data-view=cancel] .grid.g2{grid-template-columns:3fr 2fr}
+body[data-view=cancel] td .note{white-space:normal}
+@media(max-width:900px){body[data-view=cancel] .grid.g2{grid-template-columns:1fr}.lvlbar{padding:8px 10px}}
+</style>`);
+function licModsFor(n){const e=n===0;return[
+ ["Emissão assistida de NFS-e",true,"incluso, com aprovação humana em toda nota"],
+ ["Painel e controle de acessos",true,e?"incluso (painel em lista simples)":"incluso (painel completo)"],
+ ["Cancelamento com autorização do Airton Senna",!e,e?"a partir do Padrão":"incluso"],
+ ["Notas da Prefeitura de São Paulo (Lucro Presumido)",n===2,n===2?"incluso":"somente no Ampliado"],
+ ["Backup local (HD USB)",true,"incluso"],
+ ["Backup em nuvem criptografada",false,"serviço de terceiros: consulte o fornecedor"],
+ ["Aprovação automática e relatórios por cliente",false,"fora dos níveis, sob consulta"]]}
+const _paint5=window.paint;
+window.paint=function(){document.body.dataset.view=VIEW;if(S&&S.licMods)S.licMods=licModsFor(NIV);_paint5();alignDecor()};
+function alignDecor(){const v=$("#view");if(!v)return;
+  $$("td",v).forEach(td=>{const t=td.textContent.trim();if(/^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/.test(t)||/^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(t)||/^R\$\s?[\d.]+,\d{2}$/.test(t)||/^\d{2}\/\d{2}\/\d{4}(\s\d{2}:\d{2})?$/.test(t))td.classList.add("nw")});
+  $$("#view > div",v).forEach(d=>{if(d.children.length===1&&d.firstElementChild.matches("button.linkbtn[data-nav=phases]")&&!d.classList.contains("lvlbar"))d.remove()});
+  const ex=$("#view > .lvlbar");if(ex&&ex.parentElement!==v)ex.remove()}
 window.startLogin();
 })();
 
