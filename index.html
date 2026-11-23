@@ -1102,7 +1102,7 @@ const MOSTRAR_VALORES=false; /* troque para true só depois do teste de 27/11 e 
 const NIVEIS=[
  {id:"Essencial",h:70,v:8750,sem:"cerca de 5 semanas",ent:"13/1/2027",sum:"Emite e organiza as notas, com aprovação manual de toda nota."},
  {id:"Padrão",h:112,v:14000,sem:"cerca de 8 semanas",ent:"4/2/2027",sum:"Acrescenta as regras de cada cliente, o cancelamento, a numeração e o painel completo."},
- {id:"Ampliado",h:152,v:19000,sem:"cerca de 11 semanas",ent:"25/2/2027",sum:"Soma as notas da Prefeitura de São Paulo (Lucro Presumido). Valor estimado, com margem de cerca de 25%."}];
+ {id:"Ampliado",h:152,v:19000,sem:"cerca de 11 semanas",ent:"25/2/2027",sum:"Soma as notas da Prefeitura de São Paulo (Lucro Presumido), os relatórios com gráficos e o dashboard avançado. Valor estimado, com margem de cerca de 25%."}];
 let NIV=1,LTAB="levels";window.NIVL=1;
 const MX=[
  ["Emissão no Emissor Nacional (Simples Nacional), com certificado A1 e procuração","Sim","Sim","Sim"],
@@ -1161,7 +1161,7 @@ VIEWS.phases=()=>{
     h+=`<div class="card"><h2>Fases do projeto</h2><p class="note">Cada fase é cobrada em duas metades: 50% ao iniciar e 50% na aceitação. A Cruz pode parar depois de qualquer fase.</p><div class="tablewrap"><table class="mx"><thead><tr><th>Fase</th>${NIVEIS.map((l,i)=>`<th class="${i===cur?"cur":""}">${l.id}</th>`).join("")}</tr></thead><tbody>${FASES.map(f=>`<tr><td>${esc(f[0])}</td>${[1,2,3].map(j=>`<td class="${j-1===cur?"cur":""}">${cell(f[j])}</td>`).join("")}</tr>`).join("")}${MOSTRAR_VALORES?`<tr><td><b>Total do desenvolvimento</b></td>${NIVEIS.map((l,i)=>`<td class="${i===cur?"cur":""}"><b>${l.h} h · ${brl(l.v)}</b></td>`).join("")}</tr>`:""}</tbody></table></div>
     ${MOSTRAR_VALORES?"":'<div class="callout mt">Horas e valores serão apresentados junto com a proposta, depois do teste de emissão em Produção Restrita.</div>'}</div>`;
   }else{
-    const L=FEAT.filter(x=>x[2]!==1&&!/^Cancelamento/.test(x[1]));
+    const L=FEAT.filter(x=>x[2]!==1&&!/^(Cancelamento|Relatórios)/.test(x[1]));
     const bd=p=>p===2?'<span class="ph pho">Fora dos níveis</span>':p==="t"?'<span class="ph pht">Terceiros</span>':'<span class="ph pho">Opcional</span>';
     h+=`<div class="card"><h2>Fora dos três níveis</h2><p class="note">Itens que não estão incluídos em nenhum nível. Podem ser contratados à parte ou dependem de fornecedores. Cada um tem orçamento próprio.</p><div class="tablewrap"><table><thead><tr><th>Área</th><th>Recurso</th><th>Situação</th></tr></thead><tbody>${L.map(x=>`<tr><td>${x[0]}</td><td>${x[3]?optLink(x[3],esc(x[1])):esc(x[1])}</td><td>${bd(x[2])}</td></tr>`).join("")}</tbody></table></div></div>`;
   }
@@ -1178,8 +1178,8 @@ window.paint=function(){
   if(n)$(".lvlbar",v).insertAdjacentHTML("afterend",`<div class="callout" style="margin-bottom:14px"><span class="badge b-info">${NIVEIS[NIV].id}</span> ${esc(n)}</div>`);
   lvlDecor()};
 function lvlDecor(){
-  $$(".ph2").forEach(e=>{e.textContent=VIEW==="reports"?"Fora dos níveis":"Padrão e Ampliado"});
-  $$("#nav button").forEach(b=>{const p=$(".pill.soon",b);if(!p)return;if(b.dataset.nav==="cancel")p.textContent="Padrão+";else if(b.dataset.nav==="reports")p.textContent="sob consulta"});
+  $$(".ph2").forEach(e=>{e.textContent=VIEW==="reports"?"Ampliado":"Padrão e Ampliado"});
+  $$("#nav button").forEach(b=>{const p=$(".pill.soon",b);if(!p)return;if(b.dataset.nav==="cancel")p.textContent="Padrão+";else if(b.dataset.nav==="reports")p.textContent="Ampliado"});
   $$("option").forEach(o=>{o.textContent=o.textContent.replace("(Fase 2)","(extra)")});
   $$("button.linkbtn[data-nav=phases]").forEach(b=>{if(/fases/i.test(b.textContent)&&!b.closest(".lvlbar"))b.textContent="Ver níveis e recursos"})}
 
@@ -1235,7 +1235,8 @@ function licModsFor(n){const e=n===0;return[
  ["Notas da Prefeitura de São Paulo (Lucro Presumido)",n===2,n===2?"incluso":"somente no Ampliado"],
  ["Backup local (HD USB)",true,"incluso"],
  ["Backup em nuvem criptografada",false,"serviço de terceiros: consulte o fornecedor"],
- ["Aprovação automática e relatórios por cliente",false,"fora dos níveis, sob consulta"]]}
+ ["Relatórios por cliente e dashboard avançado",n===2,n===2?"incluso":"somente no Ampliado"],
+ ["Aprovação automática e resumo diário",false,"fora dos níveis, sob consulta"]]}
 const _paint5=window.paint;
 window.paint=function(){document.body.dataset.view=VIEW;if(S&&S.licMods)S.licMods=licModsFor(NIV);_paint5();alignDecor()};
 function alignDecor(){const v=$("#view");if(!v)return;
@@ -1296,6 +1297,171 @@ function levelDecor(){const v=$("#view");if(!v)return;
 }
 const _paint6=window.paint;
 window.paint=function(){_paint6.apply(this,arguments);levelDecor()};
+/* ===== Parte 7 (v13): Ampliado — dashboard avançado, índices e métricas, gráficos à escolha, relatórios com gráficos ===== */
+document.head.insertAdjacentHTML("beforeend",`<style>
+.kpis7{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media(max-width:900px){.kpis7{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kpis7 .card{padding:14px 16px;min-width:0}
+.kpis7 .lbl{font-size:13px;color:var(--muted)}
+.kpis7 .v{font-size:26px;font-weight:700;line-height:1.15;margin-top:4px;overflow-wrap:break-word}
+.dw{min-width:0}.dw .chhead{align-items:center}
+.dw .tsel{width:auto;min-width:0;max-width:100%;padding:5px 8px;font-size:13px}
+svg.g7{width:100%;height:auto;display:block}
+svg.g7 text{fill:var(--muted);font-size:11px;font-family:inherit}
+svg.g7 .gl{stroke:var(--border);stroke-width:1}
+svg.g7 .b7{fill:var(--bar)}
+svg.g7 .l7{fill:none;stroke:var(--bar);stroke-width:2.5;stroke-linejoin:round}
+svg.g7 .a7{fill:var(--bar);opacity:.18}
+svg.g7 .d7{fill:var(--bar);stroke:var(--card);stroke-width:2}
+svg.g7 text.v7{fill:var(--text);font-weight:700}
+.donut7{display:flex;gap:18px;align-items:center;justify-content:center;flex-wrap:wrap}
+.donut7 svg{width:170px;height:170px;flex:none}
+.leg7{display:grid;gap:6px;font-size:13px;min-width:0}
+.leg7 div{display:flex;align-items:center;gap:8px}
+.leg7 i{width:10px;height:10px;border-radius:3px;flex:none}
+.leg7 b{margin-left:auto;padding-left:10px;white-space:nowrap}
+.idx7 td small{display:block;color:var(--muted);font-weight:400}
+.idx7 h3,.idxg{margin:16px 0 6px;font-size:14px}
+#modalRoot .modal:has(.idx7){max-width:860px}
+.dashhead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 12px}
+.rpchart .chhead{margin-bottom:8px}
+</style>`);
+const T7=[["bar","Barras"],["hbar","Barras horizontais"],["line","Linha"],["area","Área"],["donut","Rosca"],["table","Tabela"]];
+const P7=["var(--bar)","var(--gold)","var(--ok-dot)","var(--info-dot)","var(--warn-dot)","var(--err-dot)","var(--weekend)"];
+const niceMax7=m=>{m=Math.max(m,1);const g=Math.pow(10,Math.floor(Math.log10(m))),f=m/g;return(f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*g};
+const cut7=(s,n)=>s.length>n?s.slice(0,n-1)+"…":s;
+function g7(type,labels,vals,fmt,aria){
+  fmt=fmt||(v=>String(v));const n=vals.length;
+  if(!n||vals.every(v=>!v))return '<p class="note">Sem dados no período.</p>';
+  if(type==="table")return `<div class="tablewrap"><table><thead><tr><th>Item</th><th class="num">Valor</th></tr></thead><tbody>${labels.map((l,i)=>`<tr><td>${esc(l)}</td><td class="num">${esc(fmt(vals[i]))}</td></tr>`).join("")}</tbody></table></div>`;
+  if(type==="donut"){const pos=vals.map((v,i)=>[v,i]).filter(x=>x[0]>0),tot=pos.reduce((s,x)=>s+x[0],0),r=56,C=2*Math.PI*r;let off=0;
+    const arcs=pos.map(([v,i],k)=>{const len=v/tot*C,s=`<circle cx="85" cy="85" r="${r}" fill="none" stroke="${P7[k%P7.length]}" stroke-width="28" stroke-dasharray="${len.toFixed(2)} ${(C-len).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 85 85)"><title>${esc(labels[i])}: ${esc(fmt(v))}</title></circle>`;off+=len;return s}).join("");
+    return `<div class="donut7"><svg viewBox="0 0 170 170" role="img" aria-label="${esc(aria||"Gráfico de rosca")}"><circle cx="85" cy="85" r="${r}" fill="none" stroke="var(--border)" stroke-width="28"/>${arcs}</svg><div class="leg7">${pos.map(([v,i],k)=>`<div><i style="background:${P7[k%P7.length]}"></i><span>${esc(cut7(labels[i],26))}</span><b>${esc(fmt(v))} · ${Math.round(v/tot*100)}%</b></div>`).join("")}</div></div>`}
+  if(type==="hbar"){const mx=Math.max(...vals,.0001),W=560,L=150,R=84,rh=26,H=n*rh+8,bw=W-L-R;
+    return `<svg class="g7" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(aria||"Gráfico de barras horizontais")}">${vals.map((v,i)=>{const y=i*rh+4,w=Math.max(v/mx*bw,v>0?3:0);return `<text x="${L-8}" y="${y+16}" text-anchor="end">${esc(cut7(labels[i],24))}</text><rect class="b7" x="${L}" y="${y+3}" width="${w.toFixed(1)}" height="${rh-8}" rx="4"><title>${esc(labels[i])}: ${esc(fmt(v))}</title></rect><text class="v7" x="${L+w+6}" y="${y+16}">${esc(fmt(v))}</text>`}).join("")}</svg>`}
+  const W=560,H=210,T=16,B=26,R=10,mx=niceMax7(Math.max(...vals)),ax=[0,.25,.5,.75,1].map(f=>mx*f),L=Math.max(30,Math.max(...ax.map(a=>String(fmt(a)).length))*6.3+12),pw=W-L-R,ph=H-T-B,y=v=>T+ph*(1-v/mx),sw=pw/n,px=i=>L+(i+.5)*sw,step=Math.ceil(n/8),vl=n<=8;
+  let g=ax.map(a=>`<line class="gl" x1="${L}" x2="${W-R}" y1="${y(a)}" y2="${y(a)}"/><text x="${L-6}" y="${y(a)+4}" text-anchor="end">${esc(fmt(a))}</text>`).join(""),s="";
+  if(type==="bar"){const bw=Math.min(sw*.66,44);vals.forEach((v,i)=>{const h=ph*v/mx;s+=`<rect class="b7" x="${(px(i)-bw/2).toFixed(1)}" y="${(T+ph-h).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(h,v>0?2:0).toFixed(1)}" rx="4"><title>${esc(labels[i])}: ${esc(fmt(v))}</title></rect>`;if(vl&&v>0)s+=`<text class="v7" x="${px(i).toFixed(1)}" y="${(T+ph-h-5).toFixed(1)}" text-anchor="middle">${esc(fmt(v))}</text>`})}
+  else{const pts=vals.map((v,i)=>[px(i),y(v)]),ln=pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ");
+    if(type==="area")s+=`<path class="a7" d="${ln} L${pts[n-1][0].toFixed(1)} ${T+ph} L${pts[0][0].toFixed(1)} ${T+ph} Z"/>`;
+    s+=`<path class="l7" d="${ln}"/>`+pts.map((p,i)=>`<circle class="d7" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${n>20?3:4.5}"><title>${esc(labels[i])}: ${esc(fmt(vals[i]))}</title></circle>${vl&&vals[i]>0?`<text class="v7" x="${p[0].toFixed(1)}" y="${(p[1]-9).toFixed(1)}" text-anchor="middle">${esc(fmt(vals[i]))}</text>`:""}`).join("")}
+  const xl=labels.map((l,i)=>i%step===0?`<text x="${px(i).toFixed(1)}" y="${H-8}" text-anchor="middle">${esc(cut7(l,12))}</text>`:"").join("");
+  return `<svg class="g7" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(aria||"Gráfico")}">${g}${s}${xl}</svg>`}
+
+/* estado do dashboard (preferências de gráfico), guardado só neste navegador */
+function D7(){if(!S.dash){let d=null;try{d=JSON.parse(localStorage.getItem("cruz-demo-dash"))}catch(e){}S.dash=(d&&d.w&&d.rp)?d:{w:{},rp:{}}}return S.dash}
+const dsave7=()=>{try{localStorage.setItem("cruz-demo-dash",JSON.stringify(S.dash))}catch(e){}};
+const days14=()=>[...Array(14)].map((_,i)=>addDays(NOW,i-13));
+const WK7=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"],WKO=[1,2,3,4,5,6,0];
+const top7=(map,n)=>Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,n);
+const byClient7=(f)=>{const m={};repMonth("").forEach(x=>{m[x.client]=(m[x.client]||0)+f(x)});return top7(m,7)};
+const DW=[
+ {id:"nd",title:"Notas emitidas por dia (14 dias)",t:"area",on:true,data:()=>{const d=days14();return{l:d.map(x=>fDate(x).slice(0,5)),v:d.map(x=>S.notes.filter(n=>isoDay(n.date)===isoDay(x)).length)}}},
+ {id:"vd",title:"Valor emitido por dia (14 dias)",t:"bar",on:false,fmt:brlS,data:()=>{const d=days14();return{l:d.map(x=>fDate(x).slice(0,5)),v:d.map(x=>S.notes.filter(n=>isoDay(n.date)===isoDay(x)).reduce((s,n)=>s+n.value,0))}}},
+ {id:"vc",title:"Valor emitido por cliente (mês)",t:"hbar",on:true,fmt:brlS,data:()=>{const r=byClient7(x=>x.value);return{l:r.map(x=>x[0]),v:r.map(x=>x[1])}}},
+ {id:"nc",title:"Notas por cliente (mês)",t:"hbar",on:false,data:()=>{const r=byClient7(()=>1);return{l:r.map(x=>x[0]),v:r.map(x=>x[1])}}},
+ {id:"sp",title:"Situação dos pedidos",t:"donut",on:true,data:()=>{const k=Object.keys(ST);return{l:k.map(s=>ST[s][1]),v:k.map(s=>S.orders.filter(o=>o.status===s).length)}}},
+ {id:"dw",title:"Notas por dia da semana",t:"bar",on:true,data:()=>{const c=[0,0,0,0,0,0,0];S.notes.forEach(n=>c[n.date.getDay()]++);return{l:WKO.map(i=>WK7[i]),v:WKO.map(i=>c[i])}}},
+ {id:"tk",title:"Maiores tomadores (valor, mês)",t:"hbar",on:false,fmt:brlS,data:()=>{const m={};repMonth("").forEach(n=>{m[n.taker]=(m[n.taker]||0)+n.value});const r=top7(m,6);return{l:r.map(x=>x[0]),v:r.map(x=>x[1])}}}];
+const ws7=w=>D7().w[w.id]||(D7().w[w.id]={t:w.t,on:w.on});
+const tsel7=(attr,id,cur,lab,extra)=>`<select class="tsel" ${attr}="${id}" aria-label="Tipo de gráfico: ${esc(lab)}">${T7.concat(extra||[]).map(([k,l])=>`<option value="${k}" ${cur===k?"selected":""}>${l}</option>`).join("")}</select>`;
+function dwHtml(w){const st=ws7(w),d=w.data();return `<div class="card dw" id="dw_${w.id}"><div class="spread chhead"><h2>${esc(w.title)}</h2>${tsel7("data-dw",w.id,st.t,w.title)}</div>${g7(st.t,d.l,d.v,w.fmt,w.title)}</div>`}
+
+/* índices e métricas: todos calculados com funções que o sistema já tem */
+function idx7(){
+ const o=S.orders,tot=o.length||1,er=o.filter(x=>x.status==="erro").length,rj=o.filter(x=>x.status==="rejeitada").length,aw=o.filter(x=>x.status==="aguardando"),L=repMonth(""),val=L.reduce((s,n)=>s+n.value,0),
+  age=aw.length?aw.reduce((s,x)=>s+(new Date()-x.created)/60000,0)/aw.length:0,ref=L.length?Math.round(L.filter(n=>n.ref).length/L.length*100):0,
+  pr=S.clients.filter(c=>c.procExp&&daysTo(c.procExp)>=0&&daysTo(c.procExp)<=60).length,pv=S.clients.filter(c=>c.procExp&&daysTo(c.procExp)<0).length,
+  cu=window.monthUsd?monthUsd():0,cl=+S.cfg.claudeLimit||1,act=S.users.filter(u=>u.active).length;
+ return [
+ ["Emissão","Valor emitido no mês",brl(val),"Soma das notas emitidas desde o dia 1º, sem as canceladas.","notes","Notas emitidas"],
+ ["Emissão","Notas no mês",String(L.length),"Quantidade de notas emitidas desde o dia 1º.","notes","Notas emitidas"],
+ ["Emissão","Ticket médio",brl(L.length?val/L.length:0),"Valor emitido dividido pelo número de notas.","reports","Relatórios"],
+ ["Emissão","Clientes com nota no mês",`${new Set(L.map(n=>n.client)).size} de ${S.clients.length}`,"Clientes que tiveram ao menos uma nota no mês.","clients","Clientes"],
+ ["Emissão","Notas com referência",ref+"%","Parte das notas com obra, contrato ou pedido preenchido.","notes","Notas emitidas"],
+ ["Qualidade","Aprovação na 1ª tentativa",Math.round((o.length-er)/tot*100)+"%","Pedidos que passaram na validação sem inconsistência.","errors","Erros"],
+ ["Qualidade","Pedidos com inconsistência",`${Math.round(er/tot*100)}% (${er})`,"Pedidos que o sistema não conseguiu validar sozinho.","errors","Erros"],
+ ["Qualidade","Pedidos devolvidos ao cliente",String(rj),"Pedidos devolvidos para correção do cliente.","orders","Pedidos"],
+ ["Prazo","Pedidos aguardando aprovação",String(aw.length),"Pedidos prontos esperando a conferência do aprovador.","approvals","Aprovações"],
+ ["Prazo","Espera média por aprovação",aw.length?ago(age).replace("há ",""):"nenhum aguardando","Tempo médio dos pedidos que ainda esperam aprovação.","approvals","Aprovações"],
+ ["Prazo","Cancelamentos em aprovação",String(S.cancels.filter(c=>c.st==="Aguardando aprovação").length),"Pedidos de cancelamento esperando o Airton Senna.","cancel","Cancelamentos"],
+ ["Conformidade","Procurações vencendo em 60 dias",String(pr)+(pv?` · ${pv} vencida(s)`:""),"Procurações eletrônicas que precisam ser renovadas.","clients","Clientes"],
+ ["Conformidade","Certificado A1",S.certDays+" dias","Dias até o vencimento do certificado digital da Cruz.","health","Saúde do serviço"],
+ ["Operação","Backup",`${S.bk.freq} às ${S.bk.time}, guarda ${S.bk.retention} dias`,"Agendamento e retenção dos backups.","backups","Backups"],
+ ["Operação","Consumo do Claude no mês",`US$ ${cu.toFixed(2).replace(".",",")} de ${cl} (${Math.round(cu/cl*100)}%)`,"Gasto com a API do Claude contra o limite mensal.","claude","Consumo do Claude"],
+ ["Operação","Uso da licença",`${act} de ${S.lic.limit} usuários`,"Usuários ativos contra o limite do plano.","license","Licença"]]}
+DO.idxGo=t=>{closeModal();go(t.dataset.v)};
+DO.idxOpen=()=>{const L=idx7(),gr=[...new Set(L.map(x=>x[0]))];
+  modal("Índices e métricas",`<div class="idx7"><p class="note">Todos os índices abaixo já são calculados por funções do sistema, com os dados da operação. Aqui ficam reunidos num só lugar, com a tela de origem de cada um. Valores de demonstração.</p>${gr.map(g=>`<h3>${g}</h3><div class="tablewrap"><table><tbody>${L.filter(x=>x[0]===g).map(x=>`<tr><td>${esc(x[1])}<small>${esc(x[3])}</small></td><td class="num nw"><b>${esc(x[2])}</b></td><td class="nw"><button class="linkbtn" data-do="idxGo" data-v="${x[4]}">Abrir ${esc(x[5])}</button></td></tr>`).join("")}</tbody></table></div>`).join("")}</div>`,
+  [{label:"Baixar CSV",fn:()=>{download("indices-e-metricas-demo.csv","﻿"+["Grupo;Índice;Valor;O que mede"].concat(L.map(x=>[x[0],x[1],x[2],x[3]].join(";"))).join("\n"),"text/csv");audit("Baixou os índices e métricas");return false}},{label:"Fechar",cls:"primary"}])};
+DO.dashCfg=()=>{
+  modal("Personalizar gráficos",`<p class="note">Marque os gráficos que devem aparecer na Visão geral. O tipo de cada um (barras, linha, área, rosca ou tabela) se escolhe no próprio gráfico. Sua escolha fica salva neste navegador.</p>${DW.map(w=>`<label class="opt" style="cursor:pointer"><div><b>${esc(w.title)}</b></div><input type="checkbox" data-pw="${w.id}" ${ws7(w).on?"checked":""}></label>`).join("")}`,
+  [{label:"Restaurar padrão",fn:()=>{S.dash.w={};dsave7();paint()}},{label:"Cancelar"},{label:"Salvar",cls:"primary",fn:()=>{DW.forEach(w=>{ws7(w).on=$(`[data-pw="${w.id}"]`).checked});dsave7();paint()}}])};
+function dash7(){const L=idx7(),pick=n=>L.find(x=>x[1]===n),KP=["Valor emitido no mês","Notas no mês","Ticket médio","Clientes com nota no mês","Aprovação na 1ª tentativa","Pedidos com inconsistência","Espera média por aprovação","Notas com referência"].map(pick),on=DW.filter(w=>ws7(w).on);
+ return `<section id="dash7" aria-label="Dashboard avançado"><div class="dashhead"><div><h2 style="margin:0">Dashboard avançado</h2><span class="note">Indicadores do mês e gráficos à sua escolha. Só no nível Ampliado.</span></div><div class="row"><button class="btn" data-do="dashCfg">Personalizar gráficos</button><button class="btn primary" data-do="idxOpen">Índices e métricas</button></div></div>
+ <div class="kpis7">${KP.map(k=>`<div class="card" title="${esc(k[3])}"><div class="lbl">${esc(k[1])}</div><div class="v" style="font-size:${k[2].length>9?19:26}px">${esc(k[2])}</div></div>`).join("")}</div>
+ <div class="grid g2 mt">${on.length?on.map(dwHtml).join(""):'<div class="card"><p class="note">Nenhum gráfico selecionado. Use “Personalizar gráficos”.</p></div>'}</div></section>`}
+
+/* relatórios: três novos modelos e gráfico à escolha em todos */
+RP_LIST.push(["r6","Notas por tomador","Quem mais contratou os serviços dos clientes no mês."],["r7","Movimento por dia da semana","Em quais dias da semana as notas são emitidas."],["r8","Serviço e retenções por cliente","Código de serviço, retenções e movimento de cada cliente."]);
+const _rt7=repTable,_rk7=repKpis;
+repTable=function(id,cl){
+  if(id==="r6"){const m={};repMonth(cl).forEach(n=>{const x=m[n.taker]=m[n.taker]||{c:0,v:0};x.c++;x.v+=n.value});const r=Object.entries(m).sort((a,b)=>b[1].v-a[1].v);return{h:["Tomador","Notas","Valor"],num:[1,2],rows:r.map(([k,v])=>[k,v.c,brl(v.v)]),foot:`${r.length} tomadores no mês`}}
+  if(id==="r7"){const c=[0,0,0,0,0,0,0],v=[0,0,0,0,0,0,0];repMonth(cl).forEach(n=>{c[n.date.getDay()]++;v[n.date.getDay()]+=n.value});return{h:["Dia","Notas","Valor"],num:[1,2],rows:WKO.map(i=>[WK7[i],c[i],brl(v[i])]),foot:"Notas emitidas no mês, por dia da semana."}}
+  if(id==="r8"){const L=repMonth(cl),C=S.clients.filter(c=>!cl||c.name===cl);return{h:["Cliente","Cód. serviço","Retenções","Notas","Valor"],num:[3,4],rows:C.map(c=>{const l=L.filter(n=>n.client===c.name);return[c.name,c.cod,c.ret,l.length,brl(l.reduce((s,n)=>s+n.value,0))]}),foot:"As retenções vêm do cadastro de cada cliente (Clientes > Retenções)."}}
+  return _rt7(id,cl)};
+repKpis=function(id,cl){
+  if(id==="r6"){const m={};repMonth(cl).forEach(n=>{m[n.taker]=(m[n.taker]||0)+n.value});const r=Object.entries(m).sort((a,b)=>b[1]-a[1]);return[["Tomadores",r.length],["Maior tomador",r[0]?r[0][0]:"-"],["Valor dele",brl(r[0]?r[0][1]:0)],["Notas no mês",repMonth(cl).length]]}
+  if(id==="r7"){const c=[0,0,0,0,0,0,0];repMonth(cl).forEach(n=>c[n.date.getDay()]++);const k=c.indexOf(Math.max(...c));return[["Notas no mês",c.reduce((a,b)=>a+b,0)],["Dia mais movimentado",WK7[k]],["Notas nesse dia",c[k]],["Fins de semana",c[0]+c[6]]]}
+  if(id==="r8"){const C=S.clients.filter(c=>!cl||c.name===cl);return[["Clientes",C.length],["Com retenção",C.filter(c=>c.ret!=="Sem retenção").length],["Sem retenção",C.filter(c=>c.ret==="Sem retenção").length],["Lucro Presumido",C.filter(c=>c.lp).length]]}
+  return _rk7(id,cl)};
+function rpChart7(id,cl){
+  const {L}=repData(cl),pc=(m,f)=>{const r=Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,7);return{l:r.map(x=>x[0]),v:r.map(x=>x[1])}};
+  if(id==="r1"){const d=[...Array(NOW.getDate())].map((_,i)=>new Date(NOW.getFullYear(),NOW.getMonth(),i+1));return{title:"Valor emitido por dia (mês atual)",t:"bar",fmt:brlS,l:d.map(x=>String(x.getDate())),v:d.map(x=>L.filter(n=>isoDay(n.date)===isoDay(x)).reduce((s,n)=>s+n.value,0))}}
+  if(id==="r2"){const d=[...Array(NOW.getDate())].map((_,i)=>new Date(NOW.getFullYear(),NOW.getMonth(),i+1));return{title:"Notas emitidas por dia (mês atual)",t:"area",l:d.map(x=>String(x.getDate())),v:d.map(x=>L.filter(n=>isoDay(n.date)===isoDay(x)).length)}}
+  if(id==="r3"){const O=repOrders(cl),k=Object.keys(ST);return{title:"Pedidos por situação",t:"donut",l:k.map(s=>ST[s][1]),v:k.map(s=>O.filter(o=>o.status===s).length)}}
+  if(id==="r4"){const C=repCancels(cl),k=["Aguardando aprovação","Cancelada","Recusado"];return{title:"Cancelamentos por situação",t:"donut",l:k,v:k.map(s=>C.filter(c=>c.st===s).length)}}
+  if(id==="r5"){const R=repCerts(cl),f=c=>!c.procExp?"Sem procuração":daysTo(c.procExp)<0?"Vencida":daysTo(c.procExp)<=60?"Vence em 60 dias":"Em dia",k=["Em dia","Vence em 60 dias","Vencida","Sem procuração"];return{title:"Procurações por situação",t:"donut",l:k,v:k.map(s=>R.filter(c=>f(c)===s).length)}}
+  if(id==="r6"){const m={};L.forEach(n=>{m[n.taker]=(m[n.taker]||0)+n.value});const r=pc(m);return{title:"Maiores tomadores (valor)",t:"hbar",fmt:brlS,...r}}
+  if(id==="r7"){const c=[0,0,0,0,0,0,0];L.forEach(n=>c[n.date.getDay()]++);return{title:"Notas por dia da semana",t:"bar",l:WKO.map(i=>WK7[i]),v:WKO.map(i=>c[i])}}
+  const m={};L.forEach(n=>{m[n.client]=(m[n.client]||0)+n.value});const r=pc(m);return{title:"Valor emitido por cliente",t:"hbar",fmt:brlS,...r}}
+function rpCard7(){const d=rpChart7(RP_TAB,RP_CLIENT),cur=D7().rp[RP_TAB]||d.t;
+  return `<div class="card mt rpchart" id="rpc7"><div class="spread chhead"><h2>${esc(d.title)}</h2>${tsel7("data-rpt",RP_TAB,cur,d.title,[["none","Sem gráfico"]])}</div>${cur==="none"?'<p class="note">Gráfico oculto. Escolha um tipo para mostrá-lo de novo.</p>':g7(cur,d.l,d.v,d.fmt,d.title)}</div>`}
+document.addEventListener("change",e=>{const t=e.target,dw=t.dataset&&t.dataset.dw,rp=t.dataset&&t.dataset.rpt;
+  if(dw){ws7(DW.find(w=>w.id===dw)).t=t.value;dsave7();const el=$("#dw_"+dw);if(el){const x=document.createElement("div");x.innerHTML=dwHtml(DW.find(w=>w.id===dw));el.replaceWith(x.firstElementChild);const s=$("#dw_"+dw+" select");if(s)s.focus()}}
+  if(rp){D7().rp[rp]=t.value;dsave7();const el=$("#rpc7");if(el){const x=document.createElement("div");x.innerHTML=rpCard7();el.replaceWith(x.firstElementChild);const s=$("#rpc7 select");if(s)s.focus()}}});
+
+function decor7(){const v=$("#view");if(!v)return;
+  if(VIEW==="overview"&&NIV===2&&!$("#dash7",v)){
+    const ch=$("svg.ch",v),cd=ch&&ch.closest(".card"),g=cd&&cd.parentElement;
+    if(cd)cd.remove();
+    if(g&&g.classList.contains("grid")){g.style.gridTemplateColumns="minmax(0,1fr)";g.insertAdjacentHTML("afterend",`<div class="mt">${dash7()}</div>`)}
+    else v.insertAdjacentHTML("beforeend",`<div class="mt">${dash7()}</div>`)}
+  if(VIEW==="reports"&&NIV===2){
+    const c=$("#chw_rp1",v);if(c)c.closest(".card").remove();
+    const call=$(".callout.ph2b",v);if(call)call.innerHTML='<span class="badge b-info">Ampliado</span> <b>Incluído no nível Ampliado.</b> Oito relatórios para a Cruz e para enviar aos clientes dela, cada um com gráfico à escolha (barras, linha, área, rosca ou tabela), e-mail e formato de envio. Os dados abaixo são de demonstração.';
+    const kp=$(".grid.g4.mt",v);if(kp)kp.insertAdjacentHTML("afterend",rpCard7());
+    $$(".note.mt",v).forEach(p=>{if(/fora dos níveis/.test(p.textContent))p.textContent="Incluído no Ampliado. Nesta prévia a opção só registra a escolha."})}}
+const _paint7=window.paint;
+window.paint=function(){
+  if(VIEW==="reports"&&NIV<2){
+    const [t,s]=TITLES.reports;$("#title").textContent=t;$("#subtitle").textContent=s;
+    $("#view").innerHTML=lvlBar()+`<div class="card lock"><span class="badge b-mute">Não incluído no ${NIVEIS[NIV].id}</span><h2 style="margin:10px 0">Relatórios por cliente com gráficos</h2><p class="note">Oito relatórios com gráficos à escolha, envio por e-mail ao cliente e exportação em CSV, mais o dashboard avançado e o botão de índices e métricas na Visão geral. Fazem parte do nível Ampliado.</p><div class="row" style="justify-content:center"><button class="btn primary" data-do="setLvl" data-t="2">Demonstrar o Ampliado</button><button class="linkbtn" data-nav="phases">Comparar os níveis</button></div></div>`;
+    lvlDecor();return}
+  _paint7.apply(this,arguments);decor7()};
+
+/* textos de nível coerentes com o que o Ampliado passa a entregar */
+MX.splice(8,0,
+ ["Relatórios por cliente com gráficos, envio por e-mail e CSV (8 modelos)","Não","Não","Sim"],
+ ["Dashboard avançado na Visão geral, com botão de índices e métricas","Não","Não","Sim"],
+ ["Escolha do tipo de gráfico e de quais gráficos aparecem","Não","Barras ou linha","Todos os tipos"]);
+NEEDS.splice(5,0,
+ ["Relatórios por cliente com gráficos e envio por e-mail","Avançada",["Não","Não","Sim"],"reports","Relatórios"],
+ ["Dashboard avançado, índices e métricas, e gráficos à escolha","Avançada",["Não","Não","Sim"],"overview","Visão geral → Índices e métricas"]);
+NEEDS[NEEDS.length-1][0]="Aprovação automática, resumo diário, Domínio, nuvem, WhatsApp e cobrança";
+NIV_NOTES.overview=()=>NIV===0?"No Essencial o painel é uma lista simples de pedidos e erros, e os alertas por e-mail avisam só os erros. Os gráficos e a visão completa vêm a partir do Padrão.":NIV===1?"No Padrão o gráfico da Visão geral pode ser barras ou linha. O dashboard avançado, o botão de índices e métricas e os demais tipos de gráfico vêm no Ampliado.":"No Ampliado a Visão geral ganha o dashboard avançado, com indicadores do mês, o botão Índices e métricas e gráficos que você escolhe e troca de tipo.";
+NIV_NOTES.reports=()=>NIV===2?"Os relatórios por cliente, com gráficos à escolha, fazem parte do Ampliado.":"";
+
 window.startLogin();
 })();
 
