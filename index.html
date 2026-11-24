@@ -157,6 +157,12 @@ code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font
   .hamb{display:inline-flex}.main{padding:16px}.g2,.g4,.form2{grid-template-columns:1fr}h1{font-size:25px}
 }
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.licbar{position:sticky;top:0;z-index:30;display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 16px;border-radius:12px;margin-bottom:12px;font-size:14px;border:1px solid}
+.licbar[hidden]{display:none}
+.licbar.info{background:var(--info-bg);color:var(--info-text);border-color:var(--info-dot)}
+.licbar.warn{background:var(--warn-bg);color:var(--warn-text);border-color:var(--warn-dot)}
+.licbar.err{background:var(--err-bg);color:var(--err-text);border-color:var(--err-dot)}
+.licbar .linkbtn{white-space:nowrap}
 </style>
 </head>
 <body>
@@ -1101,9 +1107,9 @@ window.addEventListener("hashchange",()=>{});
 /* ===== Parte 4 (v9): níveis Essencial / Padrão / Ampliado ===== */
 const MOSTRAR_VALORES=false; /* troque para true só depois do teste de 27/11 e da apresentação da proposta */
 const NIVEIS=[
- {id:"Essencial",h:70,v:8750,sem:"cerca de 5 semanas",ent:"13/1/2027",sum:"Emite e organiza as notas, com aprovação manual de toda nota."},
- {id:"Padrão",h:112,v:14000,sem:"cerca de 8 semanas",ent:"4/2/2027",sum:"Acrescenta as regras de cada cliente, o cancelamento, a numeração e o painel completo."},
- {id:"Ampliado",h:152,v:19000,sem:"cerca de 11 semanas",ent:"25/2/2027",sum:"Soma as notas da Prefeitura de São Paulo (Lucro Presumido), os relatórios com gráficos e o dashboard avançado. Valor estimado, com margem de cerca de 25%."}];
+ {id:"Essencial",h:70,v:8750,sem:"cerca de 5 semanas",ent:"27/1/2027",sum:"Emite e organiza as notas, com aprovação manual de toda nota."},
+ {id:"Padrão",h:112,v:12000,sem:"cerca de 8 semanas",ent:"18/2/2027",sum:"Acrescenta as regras de cada cliente, o cancelamento, a numeração e o painel completo."},
+ {id:"Ampliado",h:152,v:17000,sem:"cerca de 11 semanas",ent:"11/3/2027",sum:"Soma as notas da Prefeitura de São Paulo (Lucro Presumido), os relatórios com gráficos e o dashboard avançado. Valor estimado, com margem de cerca de 25%."}];
 let NIV=1,LTAB="levels";window.NIVL=1;
 const MX=[
  ["Emissão no Emissor Nacional (Simples Nacional), com certificado A1 e procuração","Sim","Sim","Sim"],
@@ -1479,6 +1485,91 @@ NEEDS.splice(5,0,
 NEEDS[NEEDS.length-1][0]="Aprovação automática, resumo diário, Domínio, nuvem, WhatsApp e cobrança";
 NIV_NOTES.overview=()=>NIV===0?"No Essencial o painel é uma lista simples de pedidos e erros, e os alertas por e-mail avisam só os erros. Os gráficos e a visão completa vêm a partir do Padrão.":NIV===1?"No Padrão o gráfico da Visão geral pode ser barras ou linha. O dashboard avançado, o botão de índices e métricas e os demais tipos de gráfico vêm no Ampliado.":"No Ampliado a Visão geral ganha o dashboard avançado, com indicadores do mês, o botão Índices e métricas e gráficos que você escolhe e troca de tipo.";
 NIV_NOTES.reports=()=>"";
+
+/* ===== Parte 5 (v12): licença vencida — aviso permanente e bloqueios ===== */
+const LIC_TOL=15;
+function licInfo(){const d=Math.round((S.lic.expiry-NOW)/864e5);
+ if(d>60)return{k:"ok",d};
+ if(d>30)return{k:"w60",d};
+ if(d>15)return{k:"w30",d};
+ if(d>=0)return{k:"w15",d};
+ if(-d<=LIC_TOL)return{k:"grace",d,rest:LIC_TOL+d};
+ return{k:"exp",d,ago:-d}}
+const licBlocked=()=>licInfo().k==="exp";
+function drawLicBanner(){
+ const m=document.querySelector(".main");if(!m||!S||!S.lic)return;
+ let b=$("#licBanner");if(!b){b=document.createElement("div");b.id="licBanner";b.setAttribute("role","status");m.insertBefore(b,m.firstChild)}
+ const i=licInfo(),dt=fDate(S.lic.expiry);
+ if(i.k==="ok"){b.hidden=true;b.innerHTML="";return}
+ b.hidden=false;let cls="info",txt,btn='<button class="linkbtn" data-nav="license">Ver licenciamento</button>';
+ if(i.k==="w60"||i.k==="w30"||i.k==="w15"){cls=i.k==="w60"?"info":"warn";txt=`A licença vence em <b>${i.d} dias</b> (${dt}). Renove com antecedência; o uso continua normal.`}
+ else if(i.k==="grace"){cls="warn";txt=`Licença <b>vencida em ${dt}</b>. Restam ${i.rest} dias de tolerância antes dos bloqueios. A emissão de notas e o acesso aos dados seguem normais.`;btn='<button class="linkbtn" data-act="renew">Regularizar licença</button>'}
+ else{cls="err";txt=`Licença <b>vencida há ${i.ago} dias</b>. A emissão de notas e o acesso aos dados continuam normais. Estão bloqueados: novos usuários, alterações de configuração e atualizações.`;btn='<button class="linkbtn" data-act="renew">Regularizar licença</button>'}
+ b.className="licbar "+cls;b.innerHTML=`<span>${txt}</span>${btn}`}
+function licLock(){
+ if(!licBlocked()||VIEW!=="settings")return;const v=$("#view");if(!v)return;
+ v.querySelectorAll("input,select,textarea,button:not([role=tab]):not(.linkbtn)").forEach(e=>{e.disabled=true});
+ v.insertAdjacentHTML("afterbegin",'<div class="alert"><span>Alterações de configuração estão bloqueadas enquanto a licença estiver vencida. Você ainda pode consultar tudo, emitir notas e acessar os dados.</span><button class="linkbtn" data-act="renew">Regularizar licença</button></div>')}
+const _paint8=window.paint;
+window.paint=function(){_paint8.apply(this,arguments);drawLicBanner();licLock()};
+const _ovLicense=VIEWS.overview;
+VIEWS.overview=()=>_ovLicense().replace(/<div class="alert"><span>A licença do sistema vence[\s\S]*?<\/button><\/div>/,"");
+
+const LIC_USER_ANO=300,LIC_USER_MES=27.8;
+VIEWS.license=(()=>{const base=VIEWS.license;return()=>{
+ let h=base();
+ h=h.replace(/<div class="alert">[\s\S]*?<\/button><\/div>/,"");
+ h=h.replace("Com a licença vencida, só ficam bloqueados novos usuários e alterações; notas emitidas e arquivos continuam acessíveis.","Licença vencida nunca bloqueia a emissão de notas nem o acesso aos dados.");
+ h=h.replace(/<h3 class="mt">Valores de referência<\/h3><table>[\s\S]*?<\/table>/,
+  `<h3 class="mt">Planos de licença (por usuário)</h3>${MOSTRAR_VALORES?`<table><tbody><tr><td>Plano anual</td><td class="num">${brl(25)} por usuário/mês (${brl(LIC_USER_ANO)} por ano)</td></tr><tr><td>Plano mensal</td><td class="num">${brl(LIC_USER_MES)} por usuário/mês</td></tr><tr><td>1º ano</td><td class="num">incluso no projeto</td></tr><tr><td>Usuário adicional</td><td class="num">a combinar</td></tr></tbody></table>`:'<p class="note">Plano anual ou mensal, por usuário, com o 1º ano incluso no projeto. Os valores constam na proposta.</p>'}`);
+ const i=licInfo(),cur=[["200","Ativa"],["45","Vence em 45 dias"],["10","Vence em 10 dias"],["-6","Venceu há 6 dias"],["-26","Vencida há 26 dias"]];
+ const sel=cur.reduce((a,[d])=>Math.abs(Math.round((S.lic.expiry-NOW)/864e5)-d)<Math.abs(Math.round((S.lic.expiry-NOW)/864e5)-a)?d:a,"200");
+ const brk=licBlocked();
+ h+=`<div class="grid g2 mt">
+ <div class="card"><h2>Suporte e banco de horas</h2><div class="tablewrap"><table><tbody>
+  <tr><td><b>Mês 1</b></td><td>Até 6 horas de dúvidas e ajustes leves, com agendamento</td></tr>
+  <tr><td><b>Meses 2 e 3</b></td><td>2 horas por mês, com agendamento, sem acumular</td></tr>
+  <tr><td><b>Do mês 4 em diante</b></td><td>A licença cobre correção de defeitos, atualizações de segurança e um banco de 4 horas por ano para adaptar o sistema a mudanças do Emissor Nacional (renova no aniversário da licença)</td></tr>
+  <tr><td><b>Acima do incluso</b></td><td>${MOSTRAR_VALORES?"Hora avulsa de "+brl(125)+", com estimativa antes de iniciar":"Hora avulsa sob orçamento, com estimativa antes de iniciar"}</td></tr></tbody></table></div>
+  <p class="note mt">Defeitos nunca consomem horas. Mudança de lei ou do governo que exija mais horas que o banco (por exemplo, IBS/CBS) é orçada com antecedência.</p></div>
+ <div class="card"><h2>Se a licença vencer</h2><ul class="note" style="padding-left:18px;margin:0;display:grid;gap:6px">
+  <li><b>A emissão de notas e o acesso aos dados nunca são bloqueados.</b></li>
+  <li>Avisos prévios aos 60, 30 e 15 dias do vencimento e tolerância de ${LIC_TOL} dias depois dele.</li>
+  <li>Depois da tolerância, ficam bloqueados apenas: novos usuários, alterações de configuração e atualizações.</li>
+  <li>Um aviso permanente aparece no topo das telas até a regularização. Ele não aparece em notas, PDFs, XMLs nem nos e-mails aos clientes da Cruz.</li>
+  <li>Se o governo mudar o leiaute durante a licença vencida, a atualização depende da regularização.</li>
+  <li>Não confundir com o modo offline: sem internet, o sistema segue por até ${LIC_TOL} dias sem verificar a licença.</li></ul></div></div>
+ <div class="grid g2 mt">
+ <div class="card"><h2>Atualizações do sistema</h2><dl class="kv"><dt>Versão instalada</dt><dd>${S.lic.version}</dd><dt>Atualizações até</dt><dd>${fDate(S.lic.updatesUntil)}</dd><dt>Situação</dt><dd>${brk?'<span class="badge b-err">Bloqueadas até regularizar</span>':'<span class="badge b-ok">Liberadas</span>'}</dd></dl>
+  <div class="row"><button class="btn" data-do="licUpd">Verificar atualizações</button></div></div>
+ <div class="card"><h2>Simular o estado da licença</h2><p class="note">Somente nesta demonstração: veja como o aviso e os bloqueios mudam em cada estado.</p>
+  <div class="row" style="flex-wrap:wrap">${cur.map(([d,l])=>`<button class="btn sm ${d===sel?"primary":""}" data-do="licSim" data-d="${d}">${l}</button>`).join("")}</div></div></div>`;
+ return h}})();
+
+DO.licSim=t=>{S.lic.expiry=addDays(NOW,+t.dataset.d);S.lic.updatesUntil=S.lic.expiry;audit("Simulou o estado da licença (demonstração)");paint()};
+DO.licUpd=()=>{if(licBlocked())return toast("Atualizações ficam bloqueadas com a licença vencida. Regularize a licença.","warn");toast("Verificando atualizações…");setTimeout(()=>toast(`Sistema na versão ${S.lic.version}, sem atualizações pendentes (simulado).`,"ok"),1000)};
+
+function licRenew(){const n=S.lic.limit,priceOf=m=>m==="12"?n*LIC_USER_ANO:n*LIC_USER_MES;
+ modal("Renovar licença",`<div class="field"><label for="rp">Plano</label><select id="rp"><option value="12">Anual</option><option value="1">Mensal</option></select></div><p class="note">Usuários cobertos: <b>${n}</b>. A renovação vale a partir de hoje se a licença já venceu, ou a partir do vencimento atual.</p><div class="callout" id="rv"></div>`,
+ [{label:"Cancelar"},{label:"Solicitar renovação",cls:"primary",fn:()=>{const m=$("#rp").value;S.requests.unshift({t:new Date(),desc:`Renovação ${m==="12"?"anual":"mensal"} (${n} usuários)`,value:priceOf(m),status:"Aguardando pagamento",kind:"renew",y:m==="12"?1:30/365,x:0});audit("Solicitou renovação de licença");toast("Pedido de renovação enviado (simulado). Aguardando confirmação do pagamento.","ok");refresh()}}]);
+ const upd=()=>{const m=$("#rp").value;$("#rv").innerHTML=MOSTRAR_VALORES?`Valor: <b>${brl(priceOf(m))}</b> (${n} × ${m==="12"?brl(LIC_USER_ANO)+"/ano":brl(LIC_USER_MES)+"/mês"})`:"O valor consta na proposta."};$("#rp").addEventListener("change",upd);upd()}
+function licSeats(){const L=S.lic;
+ modal("Adicionar usuários",`<p class="note">Máximo de 15 usuários. O valor de usuários adicionais é combinado na proposta${MOSTRAR_VALORES?" (referência: "+brl(LIC_USER_ANO)+" por usuário/ano, proporcional ao período restante)":""}.</p><div class="field"><label for="sq">Quantidade de usuários adicionais</label><input type="number" id="sq" min="1" max="${15-L.limit}" value="1"></div>`,
+ [{label:"Cancelar"},{label:"Solicitar",cls:"primary",fn:()=>{if(L.limit>=15){toast("Limite máximo de 15 usuários atingido.","err");return}const q=Math.min(15-L.limit,Math.max(1,parseInt($("#sq").value)||1));const v=LIC_USER_ANO*q*Math.max(0,(L.expiry-NOW)/864e5)/365;S.requests.unshift({t:new Date(),desc:`+${q} usuário(s) adicional(is)`,value:Math.round(v*100)/100,status:"Aguardando pagamento",kind:"seats",q});audit(`Solicitou ${q} usuário(s) adicional(is) de licença`);toast("Pedido enviado ao desenvolvedor (simulado). Aguardando confirmação do pagamento.","ok");refresh()}}])}
+
+document.addEventListener("click",ev=>{
+ const t=ev.target.closest("[data-act],[data-do]");if(!t)return;const a=t.dataset.act,d=t.dataset.do,blk=licBlocked();let why=null;
+ if(blk){
+  if(a==="newUser")why="Novos usuários ficam bloqueados com a licença vencida. Regularize a licença.";
+  else if(a==="addSeats")why="Adicionar usuários fica bloqueado com a licença vencida. Regularize a licença.";
+  else if(a==="toggleUser"){const u=S.users.find(x=>String(x.id)===String(t.dataset.id));if(u&&!u.active)why="Liberar um usuário fica bloqueado com a licença vencida. Regularize a licença."}
+  else if(a==="saveCfg"||a==="saveBk"||a==="certRenew")why="Alterações de configuração ficam bloqueadas com a licença vencida. Regularize a licença."}
+ if(why){ev.preventDefault();ev.stopImmediatePropagation();return toast(why,"warn")}
+ if(a==="renew"){ev.preventDefault();ev.stopImmediatePropagation();return perm("license")?licRenew():toast("Seu perfil não pode solicitar renovação.","warn")}
+ if(a==="addSeats"){ev.preventDefault();ev.stopImmediatePropagation();return perm("license")?licSeats():toast("Seu perfil não pode solicitar usuários.","warn")}
+ if(a==="devConfirm"){const r=S.requests.find(x=>x.status!=="Licença emitida");if(r&&r.kind==="renew"){ev.preventDefault();ev.stopImmediatePropagation();
+  r.status="Licença emitida";const b=S.lic.expiry<NOW?NOW:S.lic.expiry;S.lic.expiry=addDays(b,Math.round(365*r.y));S.lic.updatesUntil=S.lic.expiry;S.lic.included=false;audit("Licença atualizada pelo servidor de licenças");toast("O sistema encontrou o novo arquivo de licença assinado e se atualizou sozinho. Bloqueios removidos.","ok");notify("Licença atualizada com sucesso.","ok");refresh()}}
+},true);
 
 window.startLogin();
 })();

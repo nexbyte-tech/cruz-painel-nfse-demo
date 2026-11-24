@@ -9,3 +9,9 @@ Acesso de teste (qualquer senha com 8+ caracteres): `ti@cruz.example` (Administr
 ## Níveis (v11)
 
 Seletor de nível no topo de todas as telas (Essencial, Padrão, Ampliado) e a tela **Níveis e recursos** (comparação, fases e itens fora dos níveis). Por padrão a demonstração não mostra valores nem horas: para exibi-los, altere `MOSTRAR_VALORES` para `true` no final do `index.html`.
+
+## Licenciamento (v12)
+
+Aviso permanente no topo de todas as telas conforme o estado da licença (avisos aos 60, 30 e 15 dias, tolerância de 15 dias após o vencimento e aviso de licença vencida). **Licença vencida nunca bloqueia a emissão de notas nem o acesso aos dados**: depois da tolerância, ficam bloqueados apenas novos usuários, alterações de configuração e atualizações. O aviso não aparece em notas, PDFs, XMLs nem em e-mails aos clientes.
+
+Em **Licenciamento** há o resumo de suporte e banco de horas (6 h no mês 1, 2 h por mês nos meses 2 e 3, banco de 4 h por ano a partir do mês 4) e um simulador dos cinco estados da licença, só para a demonstração. Valores de licença só aparecem com `MOSTRAR_VALORES=true`.
