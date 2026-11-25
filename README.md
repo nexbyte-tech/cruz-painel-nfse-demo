@@ -28,3 +28,10 @@ Em **Licenciamento** há o resumo de suporte e banco de horas (mês da entrega c
 - **Mensagens automáticas** (e-mail aos clientes e WhatsApp aos usuários): fixas no Padrão; o administrador personaliza no Profissional (Configurações, aba Mensagens).
 - **Bot de triagem e atendimento:** serviço opcional, sob consulta.
 - **Licença vencida:** tolerância de 15 dias; de 16 a 30 dias, modo restrito (autonomia desligada, relatórios, módulos do Profissional, novos usuários e configurações suspensos); acima de 30 dias, modo básico. A emissão, o cancelamento e o acesso aos dados nunca são bloqueados. Use o simulador em Licenciamento.
+
+## Ajustes da versão 14 (diferença entre Padrão e Profissional)
+- **Autonomia em dois degraus.** Padrão: mínimo geral de acerto, com regra única para todos os clientes. Profissional: por cliente e tipo de serviço, com modo manual, semiautomático (janela de veto) ou automático, e limite de valor por nota. O botão "Pausar automático" existe nos dois. O cancelamento é sempre manual.
+- **Validade das procurações (Profissional).** Tela com o vencimento de cada cliente, avisos configuráveis (por exemplo, 60, 30 e 15 dias) e registro dos avisos enviados.
+- **Exportação mensal (Profissional).** Planilha CSV das notas do mês e resumo por cliente, com envio automático por e-mail em um dia fixo. Alíquotas de exemplo.
+- **Nos dois níveis:** pasta de cada cliente no padrão da Cruz e cancelamento com autorização.
+- No Padrão, as telas do Profissional aparecem com a descrição do que ficam disponíveis ao contratar o nível.
