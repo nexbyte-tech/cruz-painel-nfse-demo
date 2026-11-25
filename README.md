@@ -4,7 +4,7 @@ Modelo navegável do painel de gestão e uso do sistema de emissão automática 
 
 **Todos os dados são simulados**: nomes, CNPJs, e-mails, notas, chaves, logs, configurações e área de administração. Nada é enviado a servidores, ao Emissor Nacional, ao OneDrive, a e-mails ou ao Claude.
 
-Acesso de teste (qualquer senha com 8+ caracteres): `administrador@cruz.example` (Administrador), `gerente@cruz.example` (Gerente), `aprovador1@cruz.example` (Aprovador), `visualizador1@cruz.example` (bloqueada, para testar o aviso) e `visualizador2@cruz.example` (bloqueado). O código do MFA aparece na própria tela de login.
+Acesso de teste (qualquer senha com 8+ caracteres): `administrador@cruz.example` (Administrador), `aprovador1@cruz.example` (Aprovador) e `visualizador1@cruz.example` (bloqueado, para testar o aviso). O código do MFA aparece na própria tela de login.
 
 ## Níveis (v11)
 
@@ -24,7 +24,7 @@ Em **Licenciamento** há o resumo de suporte e banco de horas (mês da entrega c
 - **Número da NFS-e** na lista de pedidos; **IBS/CBS** (alíquotas de teste, exemplo) no detalhe da nota.
 - **Backup** só na VPS, com os riscos descritos na tela Backups. O backup em nuvem é um serviço opcional, sob consulta.
 - **Sem treinamento:** manuais de uso em PDF e esclarecimento de dúvidas de uso nos 30 dias após a entrega (tela Ajuda e suporte).
-- Usuários de teste com nomes genéricos por perfil: `gerente@`, `administrador@`, `aprovador1@`, `aprovador2@`, `visualizador1@` e `visualizador2@` (`@cruz.example`).
+- Usuários de teste com nomes genéricos por perfil: `administrador@`, `aprovador1@` e `visualizador1@` (`@cruz.example`). A licença do 1º ano cobre 2 usuários ativos (2 de 2).
 - **Mensagens automáticas** (e-mail aos clientes e WhatsApp aos usuários): fixas no Padrão; o administrador personaliza no Profissional (Configurações, aba Mensagens).
 - **Bot de triagem e atendimento:** serviço opcional, sob consulta.
 - **Licença vencida:** tolerância de 15 dias; de 16 a 30 dias, modo restrito (autonomia desligada, relatórios, módulos do Profissional, novos usuários e configurações suspensos); acima de 30 dias, modo básico. A emissão, o cancelamento e o acesso aos dados nunca são bloqueados. Use o simulador em Licenciamento.
