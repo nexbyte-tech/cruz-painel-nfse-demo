@@ -1102,7 +1102,6 @@ const _s3=window.seed;window.seed=function(){_s3();ext3()};ext3();
 window.addEventListener("hashchange",()=>{});
 
 /* ===== Parte 4 (v9): níveis Padrão / Profissional ===== */
-const MOSTRAR_VALORES=false; /* troque para true só quando os valores forem apresentados */
 const NIVEIS=[
  {id:"(removido)",h:0,v:0,sem:"",ent:"",sum:""},
  {id:"Padrão",h:0,v:0,sem:"a definir",ent:"a definir",sum:"Motor fiscal com IBS/CBS, leitura dos pedidos por e-mail com agentes, aprovação humana, retenção por cliente, número da nota no painel, e-mail ao cliente, cancelamento com autorização, autonomia por regra com mínimo geral de acerto e acesso seguro."},
@@ -1129,12 +1128,12 @@ const MX=[
  ["Exportação mensal das notas em planilha, com envio automático","Não","Não","Sim"],
  ["Notas da Prefeitura de São Paulo (Lucro Presumido, módulo)","Não","Não","Sim"]];
 const FASES=[
- ["1. Ambiente de testes e motor fiscal",[32,"2,0",4000],[40,"2,5",5000],[40,"2,5",5000]],
- ["2. Pedidos por e-mail, agentes do Claude e aprovação",[14,"0,9",1750],[28,"1,8",3500],[28,"1,8",3500]],
- ["3. Painel e controle",[8,"0,5",1000],[20,"1,3",2500],[20,"1,3",2500]],
- ["4. Saída para o OneDrive e e-mail ao cliente",[4,"0,3",500],[8,"0,5",1000],[8,"0,5",1000]],
- ["5. Instalação, testes, recuperação, documentação e manuais de uso (PDF)",[8,"0,5",1500],[10,"0,6",2000],[10,"0,6",2000]],
- ["6. Prefeitura de São Paulo",null,null,[40,"2,5",5000]]];
+ ["1. Ambiente de testes e motor fiscal",1,1,1],
+ ["2. Pedidos por e-mail, agentes do Claude e aprovação",1,1,1],
+ ["3. Painel e controle",1,1,1],
+ ["4. Saída para o OneDrive e e-mail ao cliente",1,1,1],
+ ["5. Instalação, testes, recuperação, documentação e manuais de uso (PDF)",1,1,1],
+ ["6. Prefeitura de São Paulo",null,null,1]];
 document.head.insertAdjacentHTML("beforeend",`<style>
 .lvlbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:8px 14px;margin-bottom:14px}
 .lvlbar .tabs{margin:0}.lvlbar b{font-size:14px}
@@ -1160,14 +1159,14 @@ VIEWS.phases=()=>{
   const cur=NIV,tb=tabs(LTAB,[["levels","Comparar níveis"],["needs","Necessidades da Cruz"],["phases","Fases do projeto"],["out","Fora dos níveis"]],"tabLvl");
   let h=tb;
   if(LTAB==="levels"){
-    h+=`<div class="callout" style="margin-bottom:14px"><b>Licença por módulos.</b> O sistema é entregue completo, com todos os módulos no código. O nível é definido pela <b>licença</b>: ao passar do Padrão para o Profissional, os módulos extras são ativados sem reinstalar nem refazer o sistema.</div><div class="grid g2">${NIVEIS.map((l,i)=>!i?"":`<div class="card lvlcard ${i===cur?"cur":""}"><div class="spread"><h2 style="margin:0">${l.id}</h2>${i===cur?'<span class="badge b-ok">Em demonstração</span>':""}</div><p class="note">${l.sum}</p><dl class="kv"><dt>Prazo</dt><dd>${l.sem}</dd>${MOSTRAR_VALORES?`<dt>Horas</dt><dd>${l.h} h</dd><dt>Valor</dt><dd><b>${brl(l.v)}</b></dd><dt>Entrega para testes</dt><dd>${l.ent}</dd>`:""}</dl>${i===cur?"":`<button class="btn sm" data-do="setLvl" data-t="${i}">Demonstrar este nível</button>`}</div>`).join("")}</div>
+    h+=`<div class="callout" style="margin-bottom:14px"><b>Licença por módulos.</b> O sistema é entregue completo, com todos os módulos no código. O nível é definido pela <b>licença</b>: ao passar do Padrão para o Profissional, os módulos extras são ativados sem reinstalar nem refazer o sistema.</div><div class="grid g2">${NIVEIS.map((l,i)=>!i?"":`<div class="card lvlcard ${i===cur?"cur":""}"><div class="spread"><h2 style="margin:0">${l.id}</h2>${i===cur?'<span class="badge b-ok">Em demonstração</span>':""}</div><p class="note">${l.sum}</p><dl class="kv"><dt>Prazo</dt><dd>${l.sem}</dd></dl>${i===cur?"":`<button class="btn sm" data-do="setLvl" data-t="${i}">Demonstrar este nível</button>`}</div>`).join("")}</div>
     <div class="card mt"><h2>O que cada nível entrega</h2><div class="tablewrap"><table class="mx"><thead><tr><th>Funcionalidade</th>${NIVEIS.map((l,i)=>!i?"":`<th class="${i===cur?"cur":""}">${l.id}</th>`).join("")}</tr></thead><tbody>${MX.map(r=>`<tr><td>${esc(r[0])}</td>${[2,3].map(j=>`<td class="${j-1===cur?"cur":""}">${mxCell(r[j])}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
-    <p class="note mt">${MOSTRAR_VALORES?"Valores de desenvolvimento, pagos uma vez, com o 1º ano de licença incluso (2 usuários, Padrão ou Profissional). ":""}Hospedagem em VPS, API do Claude e caixa de e-mail são custos da Cruz, pagos direto aos fornecedores. O prazo será definido depois que a Cruz fornecer o conteúdo pendente e a chave de API para testes.</p></div>`;
+    <p class="note mt">Hospedagem em VPS, API do Claude e caixa de e-mail são custos da Cruz, pagos direto aos fornecedores. O prazo será definido depois que a Cruz fornecer o conteúdo pendente e a chave de API para testes.</p></div>`;
   }else if(LTAB==="needs"){h+=needsHtml();
   }else if(LTAB==="phases"){
-    const cell=(x)=>x?(MOSTRAR_VALORES?`${x[0]} h · ${x[1]} sem · ${brl(x[2])}`:'<span class="badge b-ok">Inclusa</span>'):'<span class="badge b-mute">Não incluída</span>';
-    h+=`<div class="card"><h2>Fases do projeto</h2><p class="note">A entrega é única: o sistema completo é desenvolvido e testado e só então liberado para 30 dias de acompanhamento. As fases abaixo são etapas internas de desenvolvimento.</p><div class="tablewrap"><table class="mx"><thead><tr><th>Fase</th>${NIVEIS.map((l,i)=>!i?"":`<th class="${i===cur?"cur":""}">${l.id}</th>`).join("")}</tr></thead><tbody>${FASES.map(f=>`<tr><td>${esc(f[0])}</td>${[2,3].map(j=>`<td class="${j-1===cur?"cur":""}">${cell(f[j])}</td>`).join("")}</tr>`).join("")}${MOSTRAR_VALORES?`<tr><td><b>Total do desenvolvimento</b></td>${NIVEIS.map((l,i)=>!i?"":`<td class="${i===cur?"cur":""}"><b>${l.h} h · ${brl(l.v)}</b></td>`).join("")}</tr>`:""}</tbody></table></div>
-    ${MOSTRAR_VALORES?"":'<div class="callout mt">Horas e valores serão apresentados junto com a proposta.</div>'}</div>`;
+    const cell=(x)=>x?'<span class="badge b-ok">Inclusa</span>':'<span class="badge b-mute">Não incluída</span>';
+    h+=`<div class="card"><h2>Fases do projeto</h2><p class="note">A entrega é única: o sistema completo é desenvolvido e testado e só então liberado para 30 dias de acompanhamento. As fases abaixo são etapas internas de desenvolvimento.</p><div class="tablewrap"><table class="mx"><thead><tr><th>Fase</th>${NIVEIS.map((l,i)=>!i?"":`<th class="${i===cur?"cur":""}">${l.id}</th>`).join("")}</tr></thead><tbody>${FASES.map(f=>`<tr><td>${esc(f[0])}</td>${[2,3].map(j=>`<td class="${j-1===cur?"cur":""}">${cell(f[j])}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
+    ${'<div class="callout mt">Horas e valores serão apresentados junto com a proposta.</div>'}</div>`;
   }else{
     const L=FEAT.filter(x=>x[2]!==1&&!/^(Cancelamento|Relatórios)/.test(x[1]));
     const bd=p=>p===2?'<span class="ph pho">Fora dos níveis</span>':p==="t"?'<span class="ph pht">Terceiros</span>':'<span class="ph pho">Opcional</span>';
@@ -1519,13 +1518,12 @@ window.paint=function(){_paint8.apply(this,arguments);drawLicBanner();licLock()}
 const _ovLicense=VIEWS.overview;
 VIEWS.overview=()=>_ovLicense().replace(/<div class="alert"><span>A licença do sistema vence[\s\S]*?<\/button><\/div>/,"");
 
-const LIC_USER_ANO=300,LIC_USER_MES=27.8;
 VIEWS.license=(()=>{const base=VIEWS.license;return()=>{
  let h=base();
  h=h.replace(/<div class="alert">[\s\S]*?<\/button><\/div>/,"");
  h=h.replace("Com a licença vencida, só ficam bloqueados novos usuários e alterações; notas emitidas e arquivos continuam acessíveis.","Licença vencida nunca bloqueia a emissão de notas nem o acesso aos dados.");
  h=h.replace(/<h3 class="mt">Planos de licença<\/h3><table>[\s\S]*?<\/table>/,
-  `<h3 class="mt">Planos de licença (por usuário)</h3>${MOSTRAR_VALORES?`<table><tbody><tr><td>Plano anual</td><td class="num">${brl(25)} por usuário/mês (${brl(LIC_USER_ANO)} por ano)</td></tr><tr><td>Plano mensal</td><td class="num">${brl(LIC_USER_MES)} por usuário/mês</td></tr><tr><td>1º ano</td><td class="num">incluso no projeto, para 2 usuários (Padrão ou Profissional)</td></tr><tr><td>Usuário adicional</td><td class="num">a combinar</td></tr></tbody></table>`:'<p class="note">Plano anual ou mensal, por usuário. O 1º ano está incluso no projeto, para 2 usuários, no Padrão ou no Profissional, e as 2 vagas podem ser reatribuídas a outras pessoas; usuários adicionais e as renovações podem ser mensais ou anuais. Os valores constam na proposta.</p>'}`);
+  `<h3 class="mt">Planos de licença (por usuário)</h3><p class="note">Plano anual ou mensal, por usuário. O 1º ano está incluso no projeto, para 2 usuários, no Padrão ou no Profissional, e as 2 vagas podem ser reatribuídas a outras pessoas; usuários adicionais e as renovações podem ser mensais ou anuais. Os valores constam na proposta.</p>`);
  const i=licInfo(),cur=[["200","Ativa"],["45","Vence em 45 dias"],["10","Vence em 10 dias"],["-6","Venceu há 6 dias (tolerância)"],["-20","Vencida há 20 dias (restrito)"],["-45","Vencida há 45 dias (básico)"]];
  const sel=cur.reduce((a,[d])=>Math.abs(Math.round((S.lic.expiry-NOW)/864e5)-d)<Math.abs(Math.round((S.lic.expiry-NOW)/864e5)-a)?d:a,"200");
  const brk=licBlocked();
@@ -1533,7 +1531,7 @@ VIEWS.license=(()=>{const base=VIEWS.license;return()=>{
  <div class="card"><h2>Suporte e banco de horas</h2><div class="tablewrap"><table><tbody>
   <tr><td><b>Mês da entrega (30 dias)</b></td><td>Esclarecimento de dúvidas de uso e manuais de uso em PDF. Não há treinamento</td></tr>
   <tr><td><b>Depois do mês da entrega</b></td><td>A licença cobre correção de defeitos e atualizações de segurança. Adaptações por mudança de lei ou do Emissor Nacional são orçadas à parte, com estimativa antes de iniciar</td></tr>
-  <tr><td><b>Acima do incluso</b></td><td>${MOSTRAR_VALORES?"Hora avulsa de "+brl(125)+", com estimativa antes de iniciar":"Hora avulsa sob orçamento, com estimativa antes de iniciar"}</td></tr></tbody></table></div>
+  <tr><td><b>Acima do incluso</b></td><td>Hora avulsa sob orçamento, com estimativa antes de iniciar</td></tr></tbody></table></div>
   <p class="note mt">Defeitos nunca consomem horas. Mudança de lei ou do governo que exija mais horas que o banco (por exemplo, IBS/CBS) é orçada com antecedência.</p></div>
  <div class="card"><h2>Se a licença vencer</h2><ul class="note" style="padding-left:18px;margin:0;display:grid;gap:6px">
   <li><b>A emissão de notas e o acesso aos dados nunca são bloqueados.</b></li>
@@ -1554,13 +1552,13 @@ VIEWS.license=(()=>{const base=VIEWS.license;return()=>{
 DO.licSim=t=>{S.lic.expiry=addDays(NOW,+t.dataset.d);S.lic.updatesUntil=S.lic.expiry;if(licLevel()>0&&NIV===2){NIV=1;window.NIVL=1;renderNav()}audit("Simulou o estado da licença (demonstração)");paint()};
 DO.licUpd=()=>{if(licBlocked())return toast("Atualizações ficam bloqueadas com a licença vencida. Regularize a licença.","warn");toast("Verificando atualizações…");setTimeout(()=>toast(`Sistema na versão ${S.lic.version}, sem atualizações pendentes (simulado).`,"ok"),1000)};
 
-function licRenew(){const n=S.lic.limit,priceOf=m=>m==="12"?n*LIC_USER_ANO:n*LIC_USER_MES;
+function licRenew(){const n=S.lic.limit;
  modal("Renovar licença",`<div class="field"><label for="rpl">Plano</label><select id="rpl"><option>Padrão</option><option ${/Profissional/.test(S.lic.plan)?"selected":""}>Profissional</option></select></div><div class="field"><label for="rp">Periodicidade</label><select id="rp"><option value="12">Anual</option><option value="1">Mensal</option></select></div><p class="note">Usuários cobertos: <b>${n}</b>. A renovação vale a partir de hoje se a licença já venceu, ou a partir do vencimento atual.</p><div class="callout" id="rv"></div>`,
- [{label:"Cancelar"},{label:"Solicitar renovação",cls:"primary",fn:()=>{const m=$("#rp").value,pl=$("#rpl").value;S.requests.unshift({t:new Date(),desc:`Renovação ${pl}, ${m==="12"?"anual":"mensal"} (${n} usuários)`,value:MOSTRAR_VALORES?priceOf(m):0,status:"Aguardando pagamento",kind:"renew",y:m==="12"?1:30/365,x:0,plan:pl,m:+m});audit("Solicitou renovação de licença");toast("Pedido de renovação enviado (simulado). Aguardando confirmação do pagamento.","ok");refresh()}}]);
- const upd=()=>{const m=$("#rp").value;$("#rv").innerHTML=MOSTRAR_VALORES?`Valor: <b>${brl(priceOf(m))}</b> (${n} × ${m==="12"?brl(LIC_USER_ANO)+"/ano":brl(LIC_USER_MES)+"/mês"})`:"A licença é por usuário. O valor consta na proposta."};$("#rp").addEventListener("change",upd);upd()}
+ [{label:"Cancelar"},{label:"Solicitar renovação",cls:"primary",fn:()=>{const m=$("#rp").value,pl=$("#rpl").value;S.requests.unshift({t:new Date(),desc:`Renovação ${pl}, ${m==="12"?"anual":"mensal"} (${n} usuários)`,value:0,status:"Aguardando pagamento",kind:"renew",y:m==="12"?1:30/365,x:0,plan:pl,m:+m});audit("Solicitou renovação de licença");toast("Pedido de renovação enviado (simulado). Aguardando confirmação do pagamento.","ok");refresh()}}]);
+ const upd=()=>{const m=$("#rp").value;$("#rv").innerHTML="A licença é por usuário. O valor consta na proposta."};$("#rp").addEventListener("change",upd);upd()}
 function licSeats(){const L=S.lic;
- modal("Adicionar usuários",`<p class="note">Máximo de 15 usuários. O valor de usuários adicionais é combinado na proposta${MOSTRAR_VALORES?" (referência: "+brl(LIC_USER_ANO)+" por usuário/ano, proporcional ao período restante)":""}.</p><div class="field"><label for="sq">Quantidade de usuários adicionais</label><input type="number" id="sq" min="1" max="${15-L.limit}" value="1"></div>`,
- [{label:"Cancelar"},{label:"Solicitar",cls:"primary",fn:()=>{if(L.limit>=15){toast("Limite máximo de 15 usuários atingido.","err");return}const q=Math.min(15-L.limit,Math.max(1,parseInt($("#sq").value)||1));const v=LIC_USER_ANO*q*Math.max(0,(L.expiry-NOW)/864e5)/365;S.requests.unshift({t:new Date(),desc:`+${q} usuário(s) adicional(is)`,value:MOSTRAR_VALORES?Math.round(v*100)/100:0,status:"Aguardando pagamento",kind:"seats",q});audit(`Solicitou ${q} usuário(s) adicional(is) de licença`);toast("Pedido enviado ao desenvolvedor (simulado). Aguardando confirmação do pagamento.","ok");refresh()}}])}
+ modal("Adicionar usuários",`<p class="note">Máximo de 15 usuários. O valor de usuários adicionais é combinado na proposta.</p><div class="field"><label for="sq">Quantidade de usuários adicionais</label><input type="number" id="sq" min="1" max="${15-L.limit}" value="1"></div>`,
+ [{label:"Cancelar"},{label:"Solicitar",cls:"primary",fn:()=>{if(L.limit>=15){toast("Limite máximo de 15 usuários atingido.","err");return}const q=Math.min(15-L.limit,Math.max(1,parseInt($("#sq").value)||1));S.requests.unshift({t:new Date(),desc:`+${q} usuário(s) adicional(is)`,value:0,status:"Aguardando pagamento",kind:"seats",q});audit(`Solicitou ${q} usuário(s) adicional(is) de licença`);toast("Pedido enviado ao desenvolvedor (simulado). Aguardando confirmação do pagamento.","ok");refresh()}}])}
 
 document.addEventListener("click",ev=>{
  const t=ev.target.closest("[data-act],[data-do]");if(!t)return;const a=t.dataset.act,d=t.dataset.do,blk=licBlocked();let why=null;
