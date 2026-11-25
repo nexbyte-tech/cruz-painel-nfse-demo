@@ -22,6 +22,9 @@ Em **Licenciamento** há o resumo de suporte e banco de horas (6 h no mês 1, 2 
 - **Relatórios:** até 3 no Padrão; todos no Profissional (8 por cliente e 5 do administrador: API do Claude, fluxo de e-mails, acessos, backups e motor fiscal).
 - **Autonomia por regra:** tela com a "cápsula de acerto" por cliente e precisão mínima definida pelo administrador. O cancelamento é sempre manual.
 - **Número da NFS-e** na lista de pedidos; **IBS/CBS** (alíquotas de teste, exemplo) no detalhe da nota.
-- **Backup** na VPS, com cópia criptografada no OneDrive da Cruz.
+- **Backup** só na VPS, com os riscos descritos na tela Backups. O backup em nuvem é um serviço opcional, sob consulta.
 - Exemplo de **ambiente de treinamento** na tela Ajuda e suporte.
 - Usuários de teste com nomes genéricos por perfil: `gerente@`, `administrador@`, `aprovador1@`, `aprovador2@`, `visualizador1@` e `visualizador2@` (`@cruz.example`).
+- **Mensagens automáticas** (e-mail aos clientes e WhatsApp aos usuários): fixas no Padrão; o administrador personaliza no Profissional (Configurações, aba Mensagens).
+- **Bot de triagem e atendimento:** serviço opcional, sob consulta.
+- **Licença vencida:** tolerância de 15 dias; de 16 a 30 dias, modo restrito (autonomia desligada, relatórios, módulos do Profissional, novos usuários e configurações suspensos); acima de 30 dias, modo básico. A emissão, o cancelamento e o acesso aos dados nunca são bloqueados. Use o simulador em Licenciamento.
