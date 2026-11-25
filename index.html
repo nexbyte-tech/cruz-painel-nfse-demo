@@ -48,7 +48,7 @@ a{color:var(--primary)}
 aside{background:var(--side);color:var(--side-text);padding:22px 16px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow:auto}
 aside img.logo{width:100%;max-width:230px;display:block;margin:0 0 14px 2px}
 /* grafite e preto: o fundo verde do logotipo se estende por toda a largura do topo da lateral */
-[data-theme="grafite"] aside img.logo,[data-theme="preto"] aside img.logo{width:calc(100% + 32px);max-width:none;margin:-22px -16px 14px;padding:0 16px;background:#0d3636;object-fit:contain;box-sizing:border-box}
+[data-theme="grafite"] aside img.logo,[data-theme="preto"] aside img.logo{width:calc(100% + 32px);max-width:none;margin:-22px -16px 14px;padding:22px 16px 0 18px;background:#0d3636;object-fit:contain;box-sizing:border-box}
 .sidetitle{font-size:12px;letter-spacing:.16em;color:var(--side-muted);font-weight:600;margin:0 0 14px 4px}
 .sidegroup{font-size:11px;letter-spacing:.14em;color:var(--side-muted);margin:16px 0 6px 6px;text-transform:uppercase;opacity:.85}
 nav button{display:flex;width:100%;align-items:center;justify-content:space-between;background:none;border:0;color:var(--side-text);text-align:left;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:15px}
@@ -149,7 +149,7 @@ code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font
 .login .box{background:var(--card);border-radius:20px;padding:30px;width:min(420px,100%)}
 .login img{width:230px;display:block;margin:-6px auto 14px;border-radius:8px}
 /* grafite e preto: o verde do logotipo vira uma faixa no topo do cartão de entrada */
-[data-theme="grafite"] .login img,[data-theme="preto"] .login img{width:calc(100% + 60px);max-width:none;margin:-30px -30px 20px;padding:0 26%;background:#0d3636;object-fit:contain;box-sizing:border-box;border-radius:20px 20px 0 0}
+[data-theme="grafite"] .login img,[data-theme="preto"] .login img{width:calc(100% + 60px);max-width:none;margin:-30px -30px 8px;padding:24px calc(50% - 85px) 14px;background:#0d3636;object-fit:contain;box-sizing:border-box;border-radius:20px 20px 0 0}
 .tag-demo{display:inline-block;background:var(--info-bg);color:var(--info-text);border-radius:6px;padding:1px 8px;font-size:12px;font-weight:700;margin-left:8px;vertical-align:middle}
 .tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}.tabs button{border:1px solid var(--border);background:var(--card);padding:6px 14px;border-radius:99px;cursor:pointer;font-weight:600}.tabs button.on{background:var(--primary);color:var(--primary-text);border-color:var(--primary)}
 .hide{display:none!important}
@@ -844,7 +844,7 @@ nav button>span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;w
 img,svg{max-width:100%}
 .grid>*,.row>*{min-width:0}
 .tablewrap{overflow-x:auto;max-width:100%}
-@media(max-height:820px){[data-theme="grafite"] aside img.logo,[data-theme="preto"] aside img.logo{width:calc(100% + 24px);max-width:none;margin:-14px -12px 8px;padding:0 12px}aside{padding:14px 12px}aside img.logo{max-width:170px;margin-bottom:8px}.sidetitle{margin-bottom:8px}.sidegroup{margin:10px 0 4px 6px}nav button{padding:7px 12px;font-size:14px}.sidefoot{padding-top:10px}}
+@media(max-height:820px){[data-theme="grafite"] aside img.logo,[data-theme="preto"] aside img.logo{width:calc(100% + 24px);max-width:none;margin:-14px -12px 8px;padding:14px calc(100% - 160px) 0 14px}aside{padding:14px 12px}aside img.logo{max-width:170px;margin-bottom:8px}.sidetitle{margin-bottom:8px}.sidegroup{margin:10px 0 4px 6px}nav button{padding:7px 12px;font-size:14px}.sidefoot{padding-top:10px}}
 @media(max-width:1280px){.main{padding:20px 22px 40px}}
 @media(max-width:560px){.main{padding:12px}.spread{flex-wrap:wrap;gap:8px}h2{font-size:18px}}
 `;document.head.appendChild(css3);
