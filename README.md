@@ -23,7 +23,7 @@ Em **Licenciamento** há o resumo de suporte e banco de horas (6 h no mês 1, 2 
 - **Autonomia por regra:** tela com a "cápsula de acerto" por cliente e precisão mínima definida pelo administrador. O cancelamento é sempre manual.
 - **Número da NFS-e** na lista de pedidos; **IBS/CBS** (alíquotas de teste, exemplo) no detalhe da nota.
 - **Backup** só na VPS, com os riscos descritos na tela Backups. O backup em nuvem é um serviço opcional, sob consulta.
-- Exemplo de **ambiente de treinamento** na tela Ajuda e suporte.
+- **Sem treinamento:** manuais de uso em PDF e esclarecimento de dúvidas de uso nos 30 dias após a entrega (tela Ajuda e suporte).
 - Usuários de teste com nomes genéricos por perfil: `gerente@`, `administrador@`, `aprovador1@`, `aprovador2@`, `visualizador1@` e `visualizador2@` (`@cruz.example`).
 - **Mensagens automáticas** (e-mail aos clientes e WhatsApp aos usuários): fixas no Padrão; o administrador personaliza no Profissional (Configurações, aba Mensagens).
 - **Bot de triagem e atendimento:** serviço opcional, sob consulta.

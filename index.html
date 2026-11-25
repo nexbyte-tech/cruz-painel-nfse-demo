@@ -933,8 +933,6 @@ const OPT=[
  {id:"multi",ico:"🏢",name:"Mais usuários ou mais empresas",sum:"Acima de 15 usuários, ou emitir para outra empresa do grupo.",
   what:["Ampliação do limite da licença além de 15 usuários.","Segunda instalação, ou várias empresas no mesmo painel, com certificado e procuração de cada uma."],needs:["Certificado digital e procuração de cada empresa"],
   cost:"Definido no orçamento.",risk:"Cada empresa tem certificado, pastas e regras próprias.",time:"Definido no orçamento.",rec:"Só se a Cruz precisar."},
- {id:"train",ico:"🎓",name:"Treinamento adicional",sum:"Sessões extras além das 6 horas/mês incluídas.",
-  what:["Sessões ao vivo para novos usuários ou novos recursos.","Material em vídeo e passo a passo."],needs:["Agendamento com a equipe"],cost:"Por hora ou por pacote. Definido no orçamento.",risk:"",time:"Conforme agenda.",rec:"Útil quando entrar gente nova na equipe."},
 ];
 const TERC=[
  {id:"cloud",ico:"☁️",name:"Backup em nuvem criptografada",who:"Fornecedor de armazenamento em nuvem",sum:"Cópia dos backups fora da VPS, em armazenamento de terceiros. Sob consulta.",
@@ -966,7 +964,7 @@ const FEAT=[
  ["Emissão","Emissão no Emissor Nacional com certificado A1 e procuração",1],["Emissão","PDF e XML salvos na pasta do cliente no OneDrive",1],["Emissão","Envio da nota ao cliente por e-mail",1],
  ["Painel","Visão geral, notas emitidas, clientes e procurações, saúde do serviço",1],["Painel","Gráficos com valores, em barras ou linha/área",1],
  ["Acesso","Login com senha forte e MFA; usuários e permissões por perfil; auditoria",1],
- ["Operação","Backup na VPS, com relatório e logs por e-mail e no painel",1],["Operação","Licenciamento: usuários, vencimento, renovação",1],["Operação","Contas de e-mail, consumo e limites do Claude, configurações",1],["Operação","Treinamento (até 6 horas) e suporte de 30 dias",1],
+ ["Operação","Backup na VPS, com relatório e logs por e-mail e no painel",1],["Operação","Licenciamento: usuários, vencimento, renovação",1],["Operação","Contas de e-mail, consumo e limites do Claude, configurações",1],["Operação","Manuais de uso em PDF e esclarecimento de dúvidas de uso, nos 30 dias após a entrega",1],
  ["Aprovação","Aprovação automática por cliente, depois do período de acompanhamento",2],["Aprovação","Regra por valor: acima de um limite, o gerente aprova",2],
  ["Emissão","Cancelamento de NFS-e com aprovação do gerente",2],["Gestão","Relatórios mensais por cliente, exportação e envio por e-mail",2],["Gestão","Resumo diário por e-mail para o gerente",2],["Operação","Alertas avançados e novas tentativas automáticas em falhas do Emissor",2],
  ...OPT.map(o=>["Opcional",o.name,"o",o.id]),...TERC.map(o=>["Terceiros",o.name,"t",o.id])];
@@ -1037,13 +1035,13 @@ DO.rpSend=()=>{const cur=RP_LIST.find(x=>x[0]===RP_TAB),first=RP_CLIENT||S.clien
   const sel=$("#rsc");if(sel)sel.addEventListener("change",()=>{$("#rse").value=em(sel.value)})};
 
 /* ---------- ajuda ---------- */
-VIEWS.help=()=>`<div class="grid g2"><div class="card"><h2>Suporte</h2><dl class="kv"><dt>Quem atende</dt><dd>Desenvolvedor do sistema</dd><dt>Canal</dt><dd>E-mail e chamada, em horário comercial</dd><dt>Suporte incluído</dt><dd>30 dias após a entrega</dd><dt>Treinamento incluído</dt><dd>Até 6 horas/mês, ou 2 sessões por semana</dd><dt>Depois disso</dt><dd>Atendimento pago ${optLink("sup","(ver suporte estendido)")}</dd></dl><p class="note mt">Canais e prazos reais constarão do contrato. Nesta demonstração são exemplos.</p><button class="btn" data-do="helpTicket">Abrir um chamado (simulado)</button></div>
+VIEWS.help=()=>`<div class="grid g2"><div class="card"><h2>Suporte</h2><dl class="kv"><dt>Quem atende</dt><dd>Desenvolvedor do sistema</dd><dt>Canal</dt><dd>E-mail e chamada, em horário comercial</dd><dt>Suporte incluído</dt><dd>30 dias após a entrega</dd><dt>Manuais e dúvidas de uso</dt><dd>Manuais de uso em PDF e esclarecimento de dúvidas de uso, no mês de entrega (30 dias). Não há treinamento.</dd><dt>Depois disso</dt><dd>Atendimento pago ${optLink("sup","(ver suporte estendido)")}</dd></dl><p class="note mt">Canais e prazos reais constarão do contrato. Nesta demonstração são exemplos.</p><button class="btn" data-do="helpTicket">Abrir um chamado (simulado)</button></div>
  <div class="card"><h2>Perguntas frequentes</h2>${[["Quem aprova as notas?","Quem tem o perfil Aprovador, Gerente ou Administrador. O que cada perfil pode fazer está em Configurações, aba Permissões."],["O que faço quando um pedido dá erro?","Abra Erros e inconsistências. Corrija os dados, peça ao cliente para reenviar ou descarte o pedido."],["Como renovo a licença?","Em Licenciamento, clique em Renovar licença. O sistema continua funcionando durante a renovação; só ficam bloqueados novos usuários e alterações se a licença vencer."],["Perdi o aplicativo do MFA.","Use um código de recuperação. Se não tiver, peça a um administrador para reconfigurar o seu MFA em Usuários e acessos."],["O que muda em cada nível?","Veja a tela Níveis e recursos: ela compara o Padrão e o Profissional e mostra o que fica fora dos níveis."]].map(([q,a])=>`<details class="faq"><summary>${q}</summary><p class="note">${a}</p></details>`).join("")}</div></div>`;
 DO.helpTicket=()=>modal("Abrir chamado (simulado)",`<div class="field"><label for="ht">Assunto</label><input type="text" id="ht"></div><div class="field"><label for="hm">Descreva o problema</label><textarea id="hm" rows="3"></textarea></div><p class="note">Demonstração: nada é enviado.</p>`,[{label:"Cancelar"},{label:"Enviar",cls:"primary",fn:()=>{if(!val("ht").trim()){toast("Informe o assunto.","err");return false}audit("Abriu um chamado de suporte");toast("Chamado registrado (simulado).","ok")}}]);
 
 /* ---------- navegação, títulos e permissões ---------- */
 NAV.length=0;NAV.push(["overview","Visão geral"],["orders","Pedidos recebidos"],["approvals","Aprovações","aw"],["errors","Erros e inconsistências","er"],["notes","Notas emitidas"],["clients","Clientes e procurações"],["cancel","Cancelamentos","soon"],["reports","Relatórios","soon"],["health","Saúde do serviço"],["_","Administração"],["license","Licenciamento"],["users","Usuários e acessos"],["email","Contas de e-mail"],["claude","Claude (API)"],["backups","Backups e logs"],["settings","Configurações"],["audit","Auditoria"],["_","Projeto"],["phases","Fases e recursos"],["optional","Serviços opcionais","opt"],["help","Ajuda e suporte"],["_","Minha conta"],["account","Segurança da conta"]);
-Object.assign(TITLES,{cancel:["Cancelamentos","Cancelar notas emitidas, com aprovação do gerente."],reports:["Relatórios","Cinco relatórios, com envio ao cliente."],phases:["Fases e recursos","O que faz parte de cada fase do projeto e o que é opcional."],optional:["Serviços opcionais","Extras sob consulta, com orçamento próprio."],help:["Ajuda e suporte","Suporte, treinamento e perguntas frequentes."]});
+Object.assign(TITLES,{cancel:["Cancelamentos","Cancelar notas emitidas, com aprovação do gerente."],reports:["Relatórios","Cinco relatórios, com envio ao cliente."],phases:["Fases e recursos","O que faz parte de cada fase do projeto e o que é opcional."],optional:["Serviços opcionais","Extras sob consulta, com orçamento próprio."],help:["Ajuda e suporte","Suporte, manuais de uso e perguntas frequentes."]});
 Object.assign(VIEW_PERM,{approvals:"approve",errors:"fix",license:"license",cancel:"cancel",reports:"reports"});
 const VIEW_PHASE={cancel:2,reports:2,optional:"o"};
 const ACT_PERM={approve:"approve",reject:"approve",approveAll:"approve",saveOrder:"approve",newOrder:"approve",fixOrder:"fix",askClient:"fix",discard:"fix",exportCsv:"export",newClient:"clients",validateProc:"clients",certRenew:"settings",testConn:"settings",upsTest:"settings",testKey:"claude",resetDemo:"settings",renew:"license",addSeats:"license",devConfirm:"license",newUser:"users",editUser:"users",resetMfa:"users",resetPwd:"users",toggleUser:"users",saveBk:"backups",runBk:"backups",mailBk:"backups",restoreTest:"backups",saveCfg:"settings"};
@@ -1131,7 +1129,7 @@ const FASES=[
  ["2. Pedidos por e-mail, agentes do Claude e aprovação",[14,"0,9",1750],[28,"1,8",3500],[28,"1,8",3500]],
  ["3. Painel e controle",[8,"0,5",1000],[20,"1,3",2500],[20,"1,3",2500]],
  ["4. Saída para o OneDrive e e-mail ao cliente",[4,"0,3",500],[8,"0,5",1000],[8,"0,5",1000]],
- ["5. Instalação, testes, recuperação, documentação e treinamento",[12,"0,8",1500],[16,"1,0",2000],[16,"1,0",2000]],
+ ["5. Instalação, testes, recuperação, documentação e manuais de uso (PDF)",[12,"0,8",1500],[16,"1,0",2000],[16,"1,0",2000]],
  ["6. Prefeitura de São Paulo",null,null,[40,"2,5",5000]]];
 document.head.insertAdjacentHTML("beforeend",`<style>
 .lvlbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:8px 14px;margin-bottom:14px}
@@ -1529,7 +1527,7 @@ VIEWS.license=(()=>{const base=VIEWS.license;return()=>{
  const brk=licBlocked();
  h+=`<div class="grid g2 mt">
  <div class="card"><h2>Suporte e banco de horas</h2><div class="tablewrap"><table><tbody>
-  <tr><td><b>Mês 1</b></td><td>Até 6 horas de dúvidas e ajustes leves, com agendamento</td></tr>
+  <tr><td><b>Mês da entrega (30 dias)</b></td><td>Esclarecimento de dúvidas de uso e manuais de uso em PDF. Não há treinamento</td></tr>
   <tr><td><b>Meses 2 e 3</b></td><td>2 horas por mês, com agendamento, sem acumular</td></tr>
   <tr><td><b>Do mês 4 em diante</b></td><td>A licença cobre correção de defeitos, atualizações de segurança e um banco de 4 horas por ano para adaptar o sistema a mudanças do Emissor Nacional (renova no aniversário da licença)</td></tr>
   <tr><td><b>Acima do incluso</b></td><td>${MOSTRAR_VALORES?"Hora avulsa de "+brl(125)+", com estimativa antes de iniciar":"Hora avulsa sob orçamento, com estimativa antes de iniciar"}</td></tr></tbody></table></div>
@@ -1576,7 +1574,7 @@ document.addEventListener("click",ev=>{
   r.status="Licença emitida";const b=S.lic.expiry<NOW?NOW:S.lic.expiry;S.lic.expiry=addDays(b,Math.round(365*r.y));S.lic.updatesUntil=S.lic.expiry;if(r.plan)S.lic.plan=r.plan+" · "+(r.m===12?"anual":"mensal");S.lic.included=false;audit("Licença atualizada pelo servidor de licenças");toast("O sistema encontrou o novo arquivo de licença assinado e se atualizou sozinho. Bloqueios removidos.","ok");notify("Licença atualizada com sucesso.","ok");refresh()}}
 },true);
 
-/* ===== Parte 6 (v14): relatórios por nível, relatórios do administrador, treinamento ===== */
+/* ===== Parte 6 (v14): relatórios por nível, relatórios do administrador ===== */
 const ADM_RP=[["a1","Admin: API do Claude","Consumo, tokens e custo por dia."],["a2","Admin: fluxo de e-mails","Do e-mail recebido até a nota enviada ao cliente."],["a3","Admin: acessos e auditoria","Ações por usuário e último registro."],["a4","Admin: backups","Resultado dos backups na VPS e da cópia externa."],["a5","Admin: motor fiscal e Sefin","Tempo de resposta e rejeições do Emissor Nacional."]];
 ADM_RP.forEach(x=>RP_LIST.push(x));
 const usdF=v=>"US$ "+Number(v).toFixed(2).replace(".",",");
@@ -1622,12 +1620,9 @@ window.paint=function(){
   const c=$(".callout.ph2b",v);
   if(c)c.innerHTML=NIV===2?'<span class="badge b-info">Profissional</span> <b>Todos os relatórios.</b> Oito relatórios por cliente, com gráfico à escolha e envio por e-mail, mais cinco do administrador (API do Claude, fluxo de e-mails, acessos, backups e motor fiscal). Dados de demonstração.':'<span class="badge b-info">Padrão</span> <b>Até 3 relatórios:</b> Resumo mensal, Notas emitidas e Pedidos e prazos, com CSV e envio ao cliente. Os outros cinco relatórios por cliente e os do administrador fazem parte do Profissional. Dados de demonstração.';
   if(adm){const g=$("#rpAuto",v);if(g){const gr=g.closest(".grid");if(gr)gr.remove()}}};
-/* ambiente de treinamento (exemplo) */
-let TRN=false;
+/* manuais de uso (PDF) na Ajuda */
 const _vh6=VIEWS.help;
-VIEWS.help=()=>_vh6()+`<div class="card mt"><div class="spread"><h2>Ambiente de treinamento</h2><span class="badge ${TRN?"b-warn":"b-mute"}">${TRN?"Ativo":"Desligado"}</span></div><p class="note">Uma cópia separada do sistema, só para treinar. Usa um motor fiscal simulado (sem certificado e sem Sefin Nacional), dados fictícios e uma caixa de e-mail de teste. Nada é emitido de verdade e nenhum cliente recebe e-mail. Dá para restaurar os dados de exemplo quando quiser.</p><div class="row"><button class="btn primary" data-do="trnToggle">${TRN?"Sair do treinamento":"Entrar no treinamento (simulado)"}</button><button class="btn" data-do="trnReset" ${TRN?"":"disabled"}>Restaurar dados de exemplo</button></div></div>`;
-DO.trnToggle=()=>{TRN=!TRN;let b=$("#trnBar");if(TRN&&!b){document.body.insertAdjacentHTML("afterbegin",'<div id="trnBar" style="position:sticky;top:0;z-index:60;background:#b45309;color:#fff;padding:6px 12px;text-align:center;font-weight:600">AMBIENTE DE TREINAMENTO · nada é emitido de verdade e nenhum e-mail sai</div>')}if(!TRN&&b)b.remove();toast(TRN?"Treinamento ativado (simulado).":"Treinamento desligado.","ok");paint()};
-DO.trnReset=()=>{toast("Dados de exemplo restaurados (simulado).","ok")};
+VIEWS.help=()=>_vh6()+`<div class="card mt"><h2>Manuais de uso (PDF)</h2><p class="note">Não há treinamento. Na entrega, a Cruz recebe os manuais de uso em PDF, e as dúvidas de uso são esclarecidas durante os 30 dias seguintes, por e-mail e chamada, em horário comercial.</p><ul class="note" style="padding-left:18px;margin:0;display:grid;gap:4px"><li>Guia do painel: visão geral, pedidos e notas</li><li>Guia do aprovador: aprovar, devolver e cancelar</li><li>Guia do administrador: usuários, regras, autonomia, relatórios e mensagens</li><li>Erros comuns e o que fazer</li></ul><p class="note mt">Exemplo da demonstração: os arquivos reais são entregues com o sistema.</p></div>`;
 
 /* ===== Parte 7 (v14): etapa 2 — número da NFS-e, autonomia com cápsula de acerto ===== */
 const noteNo=id=>{const n=S.notes.find(x=>x.orderId===id);return n?`<b>${n.n}</b>`:'<span class="note">—</span>'};
