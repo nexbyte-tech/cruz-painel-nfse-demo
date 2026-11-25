@@ -1129,7 +1129,7 @@ const FASES=[
  ["2. Pedidos por e-mail, agentes do Claude e aprovação",[14,"0,9",1750],[28,"1,8",3500],[28,"1,8",3500]],
  ["3. Painel e controle",[8,"0,5",1000],[20,"1,3",2500],[20,"1,3",2500]],
  ["4. Saída para o OneDrive e e-mail ao cliente",[4,"0,3",500],[8,"0,5",1000],[8,"0,5",1000]],
- ["5. Instalação, testes, recuperação, documentação e manuais de uso (PDF)",[12,"0,8",1500],[16,"1,0",2000],[16,"1,0",2000]],
+ ["5. Instalação, testes, recuperação, documentação e manuais de uso (PDF)",[8,"0,5",1500],[10,"0,6",2000],[10,"0,6",2000]],
  ["6. Prefeitura de São Paulo",null,null,[40,"2,5",5000]]];
 document.head.insertAdjacentHTML("beforeend",`<style>
 .lvlbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:8px 14px;margin-bottom:14px}
@@ -1528,7 +1528,6 @@ VIEWS.license=(()=>{const base=VIEWS.license;return()=>{
  h+=`<div class="grid g2 mt">
  <div class="card"><h2>Suporte e banco de horas</h2><div class="tablewrap"><table><tbody>
   <tr><td><b>Mês da entrega (30 dias)</b></td><td>Esclarecimento de dúvidas de uso e manuais de uso em PDF. Não há treinamento</td></tr>
-  <tr><td><b>Meses 2 e 3</b></td><td>2 horas por mês, com agendamento, sem acumular</td></tr>
   <tr><td><b>Do mês 4 em diante</b></td><td>A licença cobre correção de defeitos, atualizações de segurança e um banco de 4 horas por ano para adaptar o sistema a mudanças do Emissor Nacional (renova no aniversário da licença)</td></tr>
   <tr><td><b>Acima do incluso</b></td><td>${MOSTRAR_VALORES?"Hora avulsa de "+brl(125)+", com estimativa antes de iniciar":"Hora avulsa sob orçamento, com estimativa antes de iniciar"}</td></tr></tbody></table></div>
   <p class="note mt">Defeitos nunca consomem horas. Mudança de lei ou do governo que exija mais horas que o banco (por exemplo, IBS/CBS) é orçada com antecedência.</p></div>
