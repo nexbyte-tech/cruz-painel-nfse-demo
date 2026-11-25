@@ -148,6 +148,8 @@ code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font
 .login{position:fixed;inset:0;background:var(--side);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px}
 .login .box{background:var(--card);border-radius:20px;padding:30px;width:min(420px,100%)}
 .login img{width:230px;display:block;margin:-6px auto 14px;border-radius:8px}
+/* grafite e preto: o verde do logotipo vira uma faixa no topo do cartão de entrada */
+[data-theme="grafite"] .login img,[data-theme="preto"] .login img{width:calc(100% + 60px);max-width:none;margin:-30px -30px 20px;padding:0 26%;background:#0d3636;object-fit:contain;box-sizing:border-box;border-radius:20px 20px 0 0}
 .tag-demo{display:inline-block;background:var(--info-bg);color:var(--info-text);border-radius:6px;padding:1px 8px;font-size:12px;font-weight:700;margin-left:8px;vertical-align:middle}
 .tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}.tabs button{border:1px solid var(--border);background:var(--card);padding:6px 14px;border-radius:99px;cursor:pointer;font-weight:600}.tabs button.on{background:var(--primary);color:var(--primary-text);border-color:var(--primary)}
 .hide{display:none!important}
