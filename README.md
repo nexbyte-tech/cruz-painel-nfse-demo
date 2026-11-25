@@ -15,3 +15,13 @@ Seletor de nível no topo de todas as telas (Padrão e Profissional, definidos p
 Aviso permanente no topo de todas as telas conforme o estado da licença (avisos aos 60, 30 e 15 dias, tolerância de 15 dias após o vencimento e aviso de licença vencida). **Licença vencida nunca bloqueia a emissão de notas nem o acesso aos dados**: depois da tolerância, ficam bloqueados apenas novos usuários, alterações de configuração e atualizações. O aviso não aparece em notas, PDFs, XMLs nem em e-mails aos clientes.
 
 Em **Licenciamento** há o resumo de suporte e banco de horas (6 h no mês 1, 2 h por mês nos meses 2 e 3, banco de 4 h por ano a partir do mês 4) e um simulador dos cinco estados da licença, só para a demonstração. Valores de licença só aparecem com `MOSTRAR_VALORES=true`.
+
+## Novidades da versão 14 (branch `v14-padrao-profissional`)
+
+- Dois níveis, definidos por licença: **Padrão** e **Profissional**. Licença por usuário, mensal ou anual (valores a definir).
+- **Relatórios:** até 3 no Padrão; todos no Profissional (8 por cliente e 5 do administrador: API do Claude, fluxo de e-mails, acessos, backups e motor fiscal).
+- **Autonomia por regra:** tela com a "cápsula de acerto" por cliente e precisão mínima definida pelo administrador. O cancelamento é sempre manual.
+- **Número da NFS-e** na lista de pedidos; **IBS/CBS** (alíquotas de teste, exemplo) no detalhe da nota.
+- **Backup** na VPS, com cópia criptografada no OneDrive da Cruz.
+- Exemplo de **ambiente de treinamento** na tela Ajuda e suporte.
+- Usuários de teste com nomes genéricos por perfil: `gerente@`, `administrador@`, `aprovador1@`, `aprovador2@`, `visualizador1@` e `visualizador2@` (`@cruz.example`).
