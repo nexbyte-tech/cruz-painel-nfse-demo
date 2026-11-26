@@ -1246,6 +1246,7 @@ function licModsFor(n){const e=n===0;return[
  ["Pedidos por imagem (JPG, JPEG, PNG)",false,"serviço opcional, sob consulta"],
  ["Avisos por WhatsApp aos usuários (QR code)",false,"serviço opcional, sob consulta"],
  ["Bot de triagem e atendimento",false,"serviço opcional, sob consulta"],
+ ["Chat interno entre usuários",false,"módulo opcional, licença por usuário (mínimo de 5)"],
  ["Backup em nuvem criptografada",false,"serviço de terceiros: consultar o fornecedor"],
  ["Relatórios por cliente e dashboard avançado",n===2,n===2?"incluso":"somente no Profissional"],
  ["Resumo diário por e-mail",false,"fora dos níveis, sob consulta"]]}
@@ -1284,7 +1285,7 @@ const NEEDS=[
  ["Controle da numeração das notas por cliente","Avançada",["Não","Sim","Sim"],"notes","Notas emitidas → Numeração"],
  ["Enviar a nota ao cliente por e-mail","Avançada",["Não","Sim","Sim"],"notes","Notas emitidas → abrir uma nota"],
  ["Notas da Prefeitura de São Paulo (Lucro Presumido)","Avançada",["Não","Não","Sim"],"clients","Clientes → Emissor"],
- ["Serviços opcionais: imagens, WhatsApp, recorrência, exportação contábil, bot, suporte estendido e outros","Sob consulta",["Fora","Fora","Fora"],"optional","Serviços opcionais"]];
+ ["Serviços opcionais: imagens, WhatsApp, recorrência, exportação contábil, bot, chat interno, suporte estendido e outros","Sob consulta",["Fora","Fora","Fora"],"optional","Serviços opcionais"]];
 function needsHtml(){const c=NIV,cell=x=>x==="Sim"?'<span class="badge b-ok">Sim</span>':x==="Não"?'<span class="badge b-mute">Não</span>':x==="Fora"?'<span class="badge b-mute">Sob consulta</span>':`<span class="badge b-info">${esc(x)}</span>`;
   const tp=t=>t==="Básica"?'<span class="ph ph1">Básica</span>':t==="Avançada"?'<span class="ph ph2">Avançada</span>':'<span class="ph pho">Sob consulta</span>';
   return `<div class="card"><h2>O que a Cruz precisa, nível a nível</h2><p class="note">As necessidades básicas fazem a nota sair certa e organizada. As avançadas reduzem trabalho manual e risco. Use “Ver” para abrir a tela correspondente no nível escolhido.</p><div class="tablewrap"><table class="mx"><thead><tr><th>Necessidade</th><th>Tipo</th>${NIVEIS.map((l,i)=>!i?"":`<th class="${i===c?"cur":""}">${l.id}</th>`).join("")}<th></th></tr></thead><tbody>${NEEDS.map(r=>`<tr><td>${esc(r[0])}</td><td>${tp(r[1])}</td>${r[2].map((x,i)=>!i?"":`<td class="${i===c?"cur":""}">${cell(x)}</td>`).join("")}<td><button class="btn sm" data-nav="${r[3]}" title="${esc(r[4])}">Ver</button></td></tr>`).join("")}</tbody></table></div></div>`}
@@ -1486,7 +1487,7 @@ MX.splice(8,0,
 NEEDS.splice(5,0,
  ["Relatórios: até 3 no Padrão; todos no Profissional, incluindo os do administrador","Avançada",["Não","Até 3","Todos"],"reports","Relatórios"],
  ["Dashboard avançado, índices e métricas, e gráficos à escolha","Avançada",["Não","Não","Sim"],"overview","Visão geral → Índices e métricas"]);
-NEEDS[NEEDS.length-1][0]="Serviços opcionais: imagens, WhatsApp, recorrência, exportação contábil, resumo diário, bot, suporte estendido e outros";
+NEEDS[NEEDS.length-1][0]="Serviços opcionais: imagens, WhatsApp, recorrência, exportação contábil, resumo diário, bot, chat interno, suporte estendido e outros";
 NIV_NOTES.overview=()=>NIV===0?"":NIV===1?"No Padrão o gráfico da Visão geral pode ser barras ou linha. O dashboard avançado, o botão de índices e métricas e os demais tipos de gráfico vêm no Profissional.":"No Profissional a Visão geral ganha o dashboard avançado, com indicadores do mês, o botão Índices e métricas e gráficos que você escolhe e troca de tipo.";
 NIV_NOTES.reports=()=>"";
 
@@ -1690,6 +1691,15 @@ OPT.push({id:"bot",ico:"🤖",name:"Bot de triagem e atendimento",sum:"Assistent
  needs:["Lista das perguntas mais frequentes e das respostas aprovadas pela Cruz","Canal escolhido (e-mail, WhatsApp oficial ou site)","Regra de transferência: quem atende e em que horário","Para WhatsApp, o serviço de terceiros de entrada por WhatsApp (API oficial)"],
  cost:"Definido no orçamento. O consumo da API do Claude e as tarifas do canal ficam por conta da Cruz.",risk:"O bot nunca emite nem cancela nota: toda emissão segue o fluxo de pedidos e aprovação. Ele só consulta dados do próprio cliente identificado, avisa que é um atendimento automatizado e transfere para uma pessoa em caso de dúvida. Respostas erradas são o principal risco, por isso as respostas ficam limitadas ao conteúdo aprovado.",time:"Definido no orçamento, depois de levantar as perguntas e o canal.",rec:"Vale como segundo passo, depois que o fluxo de pedidos estiver estável."});
 FEAT.push(["Atendimento","Bot de triagem e atendimento (sob consulta)","o","bot"]);
+/* chat interno: módulo opcional licenciável (decidido em 26/11/2026) */
+OPT.push({id:"chat",ico:"🗨️",name:"Chat interno entre usuários",sum:"Conversa entre os funcionários da Cruz logados no painel, com grupos, anexos e histórico, sem sair do sistema.",
+ what:["Conversas entre usuários e em grupos ou times, criados só pelo administrador.","Emojis, formatação de texto, anexos de até 3 MB, histórico de 30 dias (o administrador pode ampliar até 90 dias) e sons de alerta, inclusive com o navegador minimizado.","Botão para chamar a atenção, com intervalo de 15 segundos, e status de presença: disponível, ocupado, ausente e online.","Mensagens e anexos entram no backup do sistema."],
+ needs:["Antivírus ativo no servidor (VPS) e em cada computador que usa o sistema","Usuários identificados e logados no painel","Definição, pelo administrador, do prazo de histórico e dos grupos"],
+ cost:"Licença por usuário, mensal ou anual, com mínimo de 5 usuários. Os valores constam no orçamento do módulo.",
+ risk:"É um chat só interno: não acessa clientes e nunca emite, aprova ou cancela notas. O administrador não lê conversas privadas. Passado o prazo, as mensagens são apagadas do sistema, mas as cópias de backup seguem a rotação dos backups. Com o navegador fechado não há aviso sonoro.",
+ time:"Definido no orçamento, depois do aceite da entrega.",
+ rec:"Vale quando a equipe quiser conversar dentro do sistema, em vez de usar aplicativos externos."});
+FEAT.push(["Comunicação","Chat interno entre usuários (opcional)","o","chat"]);
 /* licença vencida: degraus */
 {const _sl=DO.setLvl;DO.setLvl=t=>{if(licLevel()>0&&+t.dataset.t===2)return toast("Os módulos do Profissional ficam suspensos com a licença vencida. Regularize a licença.","warn");_sl(t)}}
 const _p9=window.paint;
